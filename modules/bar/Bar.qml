@@ -174,6 +174,14 @@ ColumnLayout {
                 }
             }
             DelegateChoice {
+                roleValue: "settings"
+                delegate: EntryWrapper {
+                    Settings {
+                        objectName: "taskbarSettingsButton"
+                    }
+                }
+            }
+            DelegateChoice {
                 roleValue: "power"
                 delegate: EntryWrapper {
                     Power {
