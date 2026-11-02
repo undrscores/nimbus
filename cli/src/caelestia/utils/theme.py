@@ -140,6 +140,13 @@ def apply_gtk(colours: dict[str, str], mode: str) -> None:
             stderr=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
         )
+        icons = _icon_theme()
+        if icons:
+            subprocess.run(
+                ["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", icons if mode == "dark" else icons.replace("-Dark", "")],
+                stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+            )
 
 
 def _icon_theme() -> str | None:
