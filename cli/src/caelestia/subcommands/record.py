@@ -13,6 +13,7 @@ from caelestia.utils.paths import get_config, recording_notif_path, recording_pa
 RECORDER = "gpu-screen-recorder"
 # Software fallback for machines where gpu-screen-recorder cannot encode (e.g. NVENC/driver mismatch)
 FALLBACK = "wf-recorder"
+FLATPAK_APP = "com.dec05eba.gpu_screen_recorder"
 
 # Handles the "Recording stopped" notification actions in a tiny detached shell
 # process, so `caelestia record` can exit as soon as the recording is saved.
@@ -63,6 +64,12 @@ class Command:
             self.stop()
         else:
             self.start()
+
+    def flatpak_installed(self) -> bool:
+        return (
+            shutil.which("flatpak") is not None
+            and subprocess.run(["flatpak", "info", "--system", FLATPAK_APP], capture_output=True).returncode == 0
+        )
 
     def proc_running(self) -> bool:
         return subprocess.run(["pidof", RECORDER, FALLBACK], stdout=subprocess.DEVNULL).returncode == 0
@@ -122,46 +129,57 @@ class Command:
             raise ValueError(f"Config option 'record.extraArgs' should be an array: {e}")
 
         recording_path.parent.mkdir(parents=True, exist_ok=True)
-        # The recorder outlives this command, so it must not inherit our stdio
-        proc = subprocess.Popen(
-            [RECORDER, *args, "-o", str(recording_path)],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
+        out = str(recording_path)
+
+        # Candidates, tried in order until one stays running:
+        #  1. Flatpak gpu-screen-recorder via the screencast portal (bundles NVENC-capable ffmpeg; the
+        #     permission is remembered after the first approval). Whole-monitor capture only.
+        #  2. System gpu-screen-recorder (KMS capture)
+        #  3. wf-recorder software encoding
+        candidates = []
+        if not self.args.region and self.flatpak_installed():
+            fp = [
+                "flatpak", "run", "--system", "--command=gpu-screen-recorder", FLATPAK_APP,
+                "-w", "portal", "-restore-portal-session", "yes",
+                "-portal-session-token-filepath", str(recording_path.parent / "portal-token"),
+            ]  # fmt: skip
+            if focused := next((m for m in monitors if m["focused"]), None):
+                fp += ["-f", str(round(focused["refreshRate"]))]
+            if self.args.sound:
+                fp += ["-a", "default_output"]
+            candidates.append([*fp, "-o", out])
+        if shutil.which(RECORDER):
+            candidates.append([RECORDER, *args, "-o", out])
+        if shutil.which(FALLBACK):
+            candidates.append([FALLBACK, *fb_args, "-f", out])
 
         notif = notify("-p", "Recording started", "Recording...")
         recording_notif_path.write_text(notif)
 
-        try:
-            if proc.wait(5) != 0:
-                if shutil.which(FALLBACK):
-                    proc = subprocess.Popen(
-                        [FALLBACK, *fb_args, "-f", str(recording_path)],
-                        stdin=subprocess.DEVNULL,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                        start_new_session=True,
-                    )
-                    try:
-                        if proc.wait(1) == 0:
-                            return
-                    except subprocess.TimeoutExpired:
-                        return
-                close_notification(notif)
-                notify(
-                    "Recording failed",
-                    "An error occurred attempting to start recorder. "
-                    f"Command `{' '.join(proc.args)}` failed with exit code {proc.returncode}",
-                )
-        except subprocess.TimeoutExpired:
-            pass
+        failed = ""
+        for cmd in candidates:
+            # The recorder outlives this command, so it must not inherit our stdio
+            proc = subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+            try:
+                if proc.wait(5) == 0:
+                    return
+                failed = f"Command `{' '.join(cmd)}` failed with exit code {proc.returncode}"
+            except subprocess.TimeoutExpired:
+                return  # still running after 5s: started fine
+
+        close_notification(notif)
+        notify("Recording failed", failed or "No screen recorder is installed (gpu-screen-recorder or wf-recorder).")
 
     def stop(self) -> None:
         # Start killing recording process
         subprocess.run(["pkill", "-INT", "-x", FALLBACK], stdout=subprocess.DEVNULL)
-        subprocess.run(["pkill", "-f", RECORDER], stdout=subprocess.DEVNULL)
+        subprocess.run(["pkill", "-INT", "-f", RECORDER], stdout=subprocess.DEVNULL)  # SIGINT: the Flatpak build ignores SIGTERM
 
         # Wait for recording to finish to avoid corrupted video file
         while self.proc_running():
