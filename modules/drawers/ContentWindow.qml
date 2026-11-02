@@ -57,9 +57,11 @@ StyledWindow {
     name: "drawers"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: (fsTransitionProg > 0 && contentItem.Config.general.showOverFullscreen) ? WlrLayer.Overlay : WlrLayer.Top
-    WlrLayershell.keyboardFocus: screenState.launcher || screenState.session ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    // niri only gives OnDemand layer surfaces keyboard focus when clicked, so grab it outright while a panel needs input
+    WlrLayershell.keyboardFocus: focusGrab.active ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    mask: hasFullscreen ? emptyRegion : regions
+    // While a panel holds the focus grab the whole window takes input so clicks outside it can dismiss it
+    mask: hasFullscreen ? emptyRegion : (focusGrab.active ? null : regions)
 
     anchors.top: true
     anchors.bottom: true
@@ -96,6 +98,27 @@ StyledWindow {
         bar: bar
         panels: panels
         win: root
+    }
+
+    // Click-outside dismissal (niri has no focus-grab protocol). Sits below the bar and panels, so it only
+    // sees presses they don't handle; presses inside their bounds are ignored.
+    MouseArea {
+        z: -1
+        anchors.fill: parent
+        enabled: focusGrab.active
+        onPressed: event => {
+            const items = [bar, panels.dashboard, panels.launcher, panels.sessionWrapper, panels.sidebar, panels.popoutsWrapper, panels.utilities, panels.notifications, panels.osdWrapper];
+            for (const it of items) {
+                if (!it)
+                    continue;
+                const p = mapToItem(it, event.x, event.y);
+                if (p.x >= 0 && p.y >= 0 && p.x <= it.width && p.y <= it.height) {
+                    event.accepted = false;
+                    return;
+                }
+            }
+            focusGrab.cleared();
+        }
     }
 
     FocusGrab {

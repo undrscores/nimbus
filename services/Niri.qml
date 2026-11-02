@@ -69,10 +69,17 @@ Singleton {
         return windows.filter(w => ids.has(w.workspace_id));
     }
 
-    // niri's window IPC may not expose fullscreen on all versions; treated as false when absent.
+    // niri's window IPC has no fullscreen flag, so detect it by a non-floating window on the
+    // output's active workspace being at least as large as the output.
     function hasFullscreen(output: string): bool {
         const ws = activeWorkspaceFor(output);
-        return ws ? windows.some(w => w.workspace_id === ws.id && w.is_fullscreen === true) : false;
+        const screen = Quickshell.screens.find(s => s.name === output);
+        if (!ws || !screen)
+            return false;
+        return windows.some(w => {
+            const size = w.layout?.window_size;
+            return w.workspace_id === ws.id && !w.is_floating && size && size[0] >= screen.width && size[1] >= screen.height;
+        });
     }
 
     function isFocusedScreen(screen: ShellScreen): bool {
@@ -205,6 +212,13 @@ Singleton {
         case "WindowFocusChanged":
             focusedWindowId = d.id ?? -1;
             break;
+        case "WindowLayoutsChanged": {
+            const changes = new Map(d.changes);
+            windows = windows.map(w => changes.has(w.id) ? Object.assign({}, w, {
+                layout: changes.get(w.id)
+            }) : w);
+            break;
+        }
         case "WindowUrgencyChanged":
             windows = windows.map(w => w.id === d.id ? Object.assign({}, w, {
                 is_urgent: d.urgent
