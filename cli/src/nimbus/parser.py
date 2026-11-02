@@ -1,15 +1,22 @@
 import argparse
+from importlib.metadata import PackageNotFoundError, version
 
-from caelestia.subcommands import record, scheme, theme, wallpaper
-from caelestia.utils.paths import wallpapers_dir
-from caelestia.utils.scheme import get_scheme_names, scheme_variants
-from caelestia.utils.wallpaper import get_wallpaper
+from nimbus.subcommands import record, scheme, theme, wallpaper
+from nimbus.utils.paths import wallpapers_dir
+from nimbus.utils.scheme import get_scheme_names, scheme_variants
+from nimbus.utils.wallpaper import get_wallpaper
 
 
 def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     parser = argparse.ArgumentParser(
         prog="nimbus", description="Helper CLI for the Nimbus shell on niri (wallpaper, scheme, record)"
     )
+
+    try:
+        cli_version = version("nimbus-cli")
+    except PackageNotFoundError:
+        cli_version = "unknown"
+    parser.add_argument("--version", action="version", version=f"nimbus-cli {cli_version}")
 
     command_parser = parser.add_subparsers(
         title="subcommands", description="valid subcommands", metavar="COMMAND", help="the subcommand to run"

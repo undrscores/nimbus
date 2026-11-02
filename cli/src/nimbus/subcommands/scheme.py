@@ -1,7 +1,7 @@
 import json
 from argparse import Namespace
 
-from caelestia.utils.scheme import (
+from nimbus.utils.scheme import (
     Scheme,
     get_scheme,
     get_scheme_flavours,
@@ -9,7 +9,7 @@ from caelestia.utils.scheme import (
     get_scheme_names,
     scheme_variants,
 )
-from caelestia.utils.theme import apply_colours
+from nimbus.utils.theme import apply_colours
 
 
 class Set:

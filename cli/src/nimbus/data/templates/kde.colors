@@ -122,8 +122,8 @@ ForegroundPositive={{kpositive.rgb}}
 ForegroundVisited={{kvisited.rgb}}
 
 [General]
-ColorScheme=Caelestia
-Name=Caelestia
+ColorScheme=Nimbus
+Name=Nimbus
 
 [KDE]
 contrast=4

@@ -2,9 +2,12 @@
 
 Each target renders a template from `data/templates/` (overridable by a file of the same name in
 `~/.config/caelestia/templates/`) and writes it where the app reads it. Targets are independent: an error in one is
-logged and does not stop the others. Disable a target in `~/.config/caelestia/cli.json`:
+logged and does not stop the others. Disable a target in `~/.config/caelestia/cli.json` (the config directory is shared with the shell):
 
     { "theme": { "alacritty": false, "niri": true, "gtk": true, "qt": true, "zed": true } }
+
+`theme.opacityApps` is a list of app-id regexes that niri fades as a whole window (Brave, Qt apps, which can't be
+themed translucent from the inside); the default covers those, `[]` disables it.
 
 Template placeholders: `{{name}}` is a scheme colour as `rrggbb`, `{{name.rgb}}` is `r,g,b` (decimal), `{{mode}}` is
 `dark`/`light` and `{{appearance}}` is the same, for apps that call it that. `{{opacity}}` is the window opacity
@@ -21,8 +24,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from caelestia.utils.io import error, log, log_exception, warn
-from caelestia.utils.paths import (
+from nimbus.utils.io import error, log, log_exception, warn
+from nimbus.utils.paths import (
     atomic_write,
     c_config_dir,
     config_dir,
@@ -33,7 +36,8 @@ from caelestia.utils.paths import (
     user_templates_dir,
 )
 
-GTK_MARKER = "/* caelestia-managed */"
+GTK_MARKER = "/* nimbus-managed */"
+LEGACY_GTK_MARKER = "/* caelestia-managed */"  # files written before the rename are still ours
 _PLACEHOLDER = re.compile(r"\{\{\s*([A-Za-z0-9_]+)(?:\.(rgb))?\s*\}\}")
 
 
@@ -115,9 +119,22 @@ def apply_alacritty(colours: dict[str, str], mode: str) -> None:
     _write_if_changed(theme_dir / "alacritty.toml", render_file("alacritty.toml", colours, mode))
 
 
+# Apps that can't be made translucent from the inside (Chromium, Qt widgets): niri fades the whole window instead
+DEFAULT_OPACITY_APPS = [r"^brave-", r"^kcm_", r"^org\.kde\.", r"^org\.qbittorrent\.", r"^com\.obsproject\."]
+
+
+def opacity_rules() -> str:
+    """niri window rules giving `theme.opacityApps` (app-id regexes) the window opacity. `[]` turns them off."""
+    apps = get_config().get("theme", {}).get("opacityApps", DEFAULT_OPACITY_APPS)
+    if not apps:
+        return ""
+    matches = "\n".join(f'    match app-id=r#"{app}"#' for app in apps)
+    return f"\n// Whole-window opacity for apps that can't be themed translucent\nwindow-rule {{\n{matches}\n    opacity {get_opacity():g}\n}}\n"
+
+
 @log_exception
 def apply_niri(colours: dict[str, str], mode: str) -> None:
-    _write_if_changed(theme_dir / "niri.kdl", render_file("niri.kdl", colours, mode))
+    _write_if_changed(theme_dir / "niri.kdl", render_file("niri.kdl", colours, mode) + opacity_rules())
 
 
 @log_exception
@@ -125,8 +142,8 @@ def apply_gtk(colours: dict[str, str], mode: str) -> None:
     css = f"{GTK_MARKER}\n" + render_file("gtk.css", colours, mode)
     for ver in ("gtk-3.0", "gtk-4.0"):
         path = config_dir / ver / "gtk.css"
-        if path.exists() and not path.read_text().startswith(GTK_MARKER):
-            warn(f"{path} is not managed by caelestia, leaving it alone")
+        if path.exists() and not path.read_text().startswith((GTK_MARKER, LEGACY_GTK_MARKER)):
+            warn(f"{path} is not managed by nimbus, leaving it alone")
             continue
         # GTK3 themes don't read the named colours, so it also gets explicit widget rules
         extra = render_file("gtk3.css", colours, mode) if ver == "gtk-3.0" else ""
@@ -193,7 +210,7 @@ def apply_qt(colours: dict[str, str], mode: str) -> None:
     scheme_text = render_file("kde.colors", colours, mode)
 
     # Standalone scheme file (shows up in KDE's colour scheme chooser)
-    _write_if_changed(data_dir / "color-schemes" / "Caelestia.colors", scheme_text)
+    _write_if_changed(data_dir / "color-schemes" / "Nimbus.colors", scheme_text)
 
     # KDE apps read the active colours from kdeglobals, so merge the scheme's groups into it
     # (what plasma-apply-colorscheme does), keeping the user's other settings.
@@ -205,7 +222,7 @@ def apply_qt(colours: dict[str, str], mode: str) -> None:
             del existing[name]
     general = existing.setdefault("[General]", [])
     general[:] = [ln for ln in general if not ln.startswith(("ColorScheme=", "Name="))]
-    general.insert(0, "ColorScheme=Caelestia")
+    general.insert(0, "ColorScheme=Nimbus")
     for name, lines in new.items():
         if name and name != "[General]":
             existing[name] = lines
@@ -229,7 +246,16 @@ def apply_qt(colours: dict[str, str], mode: str) -> None:
 
 @log_exception
 def apply_zed(colours: dict[str, str], mode: str) -> None:
-    _write_if_changed(config_dir / "zed" / "themes" / "caelestia.json", render_file("zed.json", colours, mode))
+    themes = config_dir / "zed" / "themes"
+    _write_if_changed(themes / "nimbus.json", render_file("zed.json", colours, mode))
+
+    # Migrate from the pre-rename theme name
+    (themes / "caelestia.json").unlink(missing_ok=True)
+    settings = config_dir / "zed" / "settings.json"
+    if settings.exists():
+        text = settings.read_text()
+        if re.search(r'"theme"\s*:\s*"Caelestia"', text):
+            atomic_write(settings, re.sub(r'("theme"\s*:\s*)"Caelestia"', r'\1"Nimbus"', text))
 
 
 TARGETS = {
@@ -268,7 +294,7 @@ def setup(colours: dict[str, str], mode: str) -> None:
         if not backup.exists():
             shutil.copy2(niri, backup)
         original = niri.read_text()
-        atomic_write(niri, original.rstrip("\n") + f"\n\n// Wallpaper colours from caelestia (keep last)\n{inc}\n")
+        atomic_write(niri, original.rstrip("\n") + f"\n\n// Wallpaper colours from nimbus (keep last)\n{inc}\n")
         valid = subprocess.run(["niri", "validate", "-c", str(niri)], capture_output=True, text=True)
         if valid.returncode != 0:
             atomic_write(niri, original)
@@ -279,7 +305,7 @@ def setup(colours: dict[str, str], mode: str) -> None:
     # Zed: select the generated theme if there are no settings yet
     zed = config_dir / "zed" / "settings.json"
     if not zed.exists():
-        atomic_write(zed, '{\n  "theme": "Caelestia"\n}\n')
+        atomic_write(zed, '{\n  "theme": "Nimbus"\n}\n')
         log(f"created {zed}")
-    elif '"Caelestia"' not in zed.read_text():
-        warn(f'set "theme": "Caelestia" in {zed} to use the generated Zed theme')
+    elif '"Nimbus"' not in zed.read_text():
+        warn(f'set "theme": "Nimbus" in {zed} to use the generated Zed theme')

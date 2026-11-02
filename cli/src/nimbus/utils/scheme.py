@@ -3,8 +3,8 @@ import random
 from pathlib import Path
 from typing import Any
 
-from caelestia.utils.notify import notify
-from caelestia.utils.paths import atomic_dump, scheme_data_dir, scheme_path
+from nimbus.utils.notify import notify
+from nimbus.utils.paths import atomic_dump, scheme_data_dir, scheme_path
 
 
 class Scheme:
@@ -155,7 +155,7 @@ class Scheme:
 
     def _update_colours(self) -> None:
         if self.name == "dynamic":
-            from caelestia.utils.material import get_colours_for_image
+            from nimbus.utils.material import get_colours_for_image
 
             try:
                 self._colours = get_colours_for_image()

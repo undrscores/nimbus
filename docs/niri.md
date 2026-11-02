@@ -106,7 +106,7 @@ apps at the same time (`nimbus wallpaper`, `nimbus scheme set` and `nimbus theme
 | Alacritty | `~/.local/state/caelestia/theme/alacritty.toml`, imported by `alacritty.toml` | live reload |
 | niri | `~/.local/state/caelestia/theme/niri.kdl` (focus ring and border colours), `include`d last in `config.kdl` | niri reloads included files |
 | GTK 3/4 | `~/.config/gtk-{3,4}.0/gtk.css` (named colours) and `color-scheme` via gsettings | on app start |
-| Qt/KDE (Dolphin…) | `~/.local/share/color-schemes/Caelestia.colors`, merged into `~/.config/kdeglobals`, plus a palette-changed D-Bus signal | running KDE apps update live |
+| Qt/KDE (Dolphin…) | `~/.local/share/color-schemes/Nimbus.colors`, merged into `~/.config/kdeglobals`, plus a palette-changed D-Bus signal | running KDE apps update live |
 | Zed | `~/.config/zed/themes/caelestia.json`, selected in `settings.json` | live |
 
 ```sh
@@ -161,7 +161,15 @@ set-default multi-user.target` (Ctrl+Alt+F2 gives you a text console if the gree
 Alacritty, GTK apps (Thunar, …) and Zed are made translucent by `nimbus theme apply`. Set the opacity with the
 **App opacity** slider on the Nexus "Wallpaper & style" page, with `appearance.appOpacity` in `shell.json`, or per run
 with `nimbus theme apply --opacity 0.85`. niri blurs what is behind them (see the `background-effect` window rule in
-your `config.kdl`). Apps with their own theming, such as Brave, stay opaque.
+your `config.kdl`). 
+Apps that can't be made translucent from the inside (Brave, Qt widget apps) are faded as a whole window instead:
+`nimbus theme apply` writes niri `window-rule { opacity … }` entries for the app-id regexes in `theme.opacityApps`
+(`~/.config/caelestia/cli.json`; the default covers Brave, KDE/`kcm_` apps, qBittorrent and OBS, `[]` turns it off).
+This fades text along with the background, which is why it is not applied to apps that support real translucency.
+
+GTK and Qt apps read their theme when they start, so apps that are already open keep the old colours and opacity until
+they are restarted (Alacritty and Zed update live). GTK3 and libadwaita offer no supported way to reload `gtk.css` in a
+running app.
 
 Add the `window-rule` from [niri-config.kdl](niri-config.kdl): its `draw-border-with-background false` stops niri
 painting a solid focus-ring block behind the focused window, which otherwise makes translucent windows look opaque

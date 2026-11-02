@@ -1,7 +1,7 @@
 from argparse import Namespace
 
-from caelestia.utils.scheme import get_scheme
-from caelestia.utils.theme import apply_colours, set_opacity_override, setup
+from nimbus.utils.scheme import get_scheme
+from nimbus.utils.theme import apply_colours, set_opacity_override, setup
 
 
 class Apply:

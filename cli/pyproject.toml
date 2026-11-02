@@ -3,16 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "caelestia-niri-cli"
+name = "nimbus-cli"
 version = "0.1.0"
-description = "Wallpaper/scheme/record helper for the Caelestia shell on niri (trimmed fork of caelestia-dots/cli)"
+description = "Wallpaper, scheme and app-theming helper for the Nimbus shell on niri (trimmed fork of caelestia-dots/cli)"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.13"
 dependencies = ["pillow", "materialyoucolor"]
 
 [project.scripts]
-nimbus = "caelestia:main"
-caelestia = "caelestia:main"  # backwards-compatible alias
+nimbus = "nimbus:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/caelestia"]
+packages = ["src/nimbus"]

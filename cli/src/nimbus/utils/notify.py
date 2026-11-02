@@ -2,7 +2,7 @@ import subprocess
 
 
 def notify(*args: str) -> str:
-    return subprocess.check_output(["notify-send", "-a", "caelestia-cli", *args], text=True).strip()
+    return subprocess.check_output(["notify-send", "-a", "nimbus", *args], text=True).strip()
 
 
 def close_notification(id: str) -> None:

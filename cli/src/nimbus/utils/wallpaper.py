@@ -10,10 +10,10 @@ from materialyoucolor.hct import Hct
 from materialyoucolor.utils.color_utils import argb_from_rgb
 from PIL import Image
 
-from caelestia.utils.colourfulness import get_variant
-from caelestia.utils.niri import monitors
-from caelestia.utils.material import get_colours_for_image
-from caelestia.utils.paths import (
+from nimbus.utils.colourfulness import get_variant
+from nimbus.utils.niri import monitors
+from nimbus.utils.material import get_colours_for_image
+from nimbus.utils.paths import (
     compute_hash,
     get_config,
     wallpaper_link_path,
@@ -21,8 +21,8 @@ from caelestia.utils.paths import (
     wallpaper_thumbnail_path,
     wallpapers_cache_dir,
 )
-from caelestia.utils.scheme import Scheme, get_scheme
-from caelestia.utils.theme import apply_colours
+from nimbus.utils.scheme import Scheme, get_scheme
+from nimbus.utils.theme import apply_colours
 
 IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff", ".gif"]
 VIDEO_EXTENSIONS = [".mp4", ".mkv", ".webm", ".mov", ".avi"]

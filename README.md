@@ -45,7 +45,7 @@ Other distributions need the same pieces by hand:
 - fonts: Material Symbols Rounded, Rubik, a Nerd Font symbols font
 - runtime tools: `ddcutil`, `brightnessctl`, `swappy`, `wl-clipboard`, `slurp`, `gpu-screen-recorder`, `libnotify`, `playerctl`,
   `power-profiles-daemon`, `networkmanager`
-- the `caelestia` helper CLI: `scripts/install-cli.sh` (needs `python3-Pillow`; `materialyoucolor` comes from PyPI)
+- the `nimbus` helper CLI: `scripts/install-cli.sh` (needs `python3-Pillow`; `materialyoucolor` comes from PyPI)
 
 Build the plugin manually with:
 

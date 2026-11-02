@@ -6,9 +6,9 @@ from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
 
-from caelestia.utils import niri
-from caelestia.utils.notify import close_notification, notify
-from caelestia.utils.paths import get_config, recording_notif_path, recording_path, recordings_dir
+from nimbus.utils import niri
+from nimbus.utils.notify import close_notification, notify
+from nimbus.utils.paths import get_config, recording_notif_path, recording_path, recordings_dir
 
 RECORDER = "gpu-screen-recorder"
 # Software fallback for machines where gpu-screen-recorder cannot encode (e.g. NVENC/driver mismatch)
@@ -22,7 +22,7 @@ path=$1
 uri=$2
 directory=$3
 
-action=$(notify-send -a caelestia-cli \
+action=$(notify-send -a nimbus \
     --action=watch=Watch \
     --action=open=Open \
     --action=delete=Delete \

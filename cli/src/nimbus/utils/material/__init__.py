@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from caelestia.utils.paths import compute_hash, scheme_cache_dir, wallpaper_thumbnail_path
+from nimbus.utils.paths import compute_hash, scheme_cache_dir, wallpaper_thumbnail_path
 
 
 def get_score_for_image(image: Path | str, cache_base: Path):
@@ -14,7 +14,7 @@ def get_score_for_image(image: Path | str, cache_base: Path):
     except (IOError, TypeError):
         pass
 
-    from caelestia.utils.material.score import score
+    from nimbus.utils.material.score import score
 
     s = score(str(image))
 
@@ -26,7 +26,7 @@ def get_score_for_image(image: Path | str, cache_base: Path):
 
 def get_colours_for_image(image: Path | str = wallpaper_thumbnail_path, scheme=None) -> dict[str, str]:
     if scheme is None:
-        from caelestia.utils.scheme import get_scheme
+        from nimbus.utils.scheme import get_scheme
 
         scheme = get_scheme()
 
@@ -39,7 +39,7 @@ def get_colours_for_image(image: Path | str = wallpaper_thumbnail_path, scheme=N
     except (IOError, json.JSONDecodeError):
         pass
 
-    from caelestia.utils.material.generator import gen_scheme
+    from nimbus.utils.material.generator import gen_scheme
 
     primary = get_score_for_image(image, cache_base)
     scheme = gen_scheme(scheme, primary)

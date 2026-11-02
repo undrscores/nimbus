@@ -1,5 +1,5 @@
-from caelestia.parser import parse_args
-from caelestia.utils.io import log
+from nimbus.parser import parse_args
+from nimbus.utils.io import log
 
 
 def main() -> None:
