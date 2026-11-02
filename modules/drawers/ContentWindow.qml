@@ -100,14 +100,13 @@ StyledWindow {
         win: root
     }
 
-    property bool clickOutsideDismiss: false
+    property bool clickOutsideDismiss: true
 
     // Click-outside dismissal (niri has no focus-grab protocol). Sits below the bar and panels, so it only
     // sees presses they don't handle; presses inside their bounds are ignored.
     MouseArea {
         z: -1
         anchors.fill: parent
-        // Off by default: stray clicks closing menus was annoying. Menus still close via Escape or their shortcut.
         enabled: root.clickOutsideDismiss && focusGrab.active
         onPressed: event => {
             const items = [bar, panels.dashboard, panels.launcher, panels.sessionWrapper, panels.sidebar, panels.popoutsWrapper, panels.utilities, panels.notifications, panels.osdWrapper];
