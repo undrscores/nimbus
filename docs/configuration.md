@@ -255,10 +255,6 @@ For example, to automatically hide the bar on the monitor named `DP-1`:
                     "timeout": 300,
                     "idleAction": "dpms off",
                     "returnAction": "dpms on"
-                },
-                {
-                    "timeout": 600,
-                    "idleAction": ["suspendThenHibernate"]
                 }
             ]
         },
