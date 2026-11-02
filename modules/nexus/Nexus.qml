@@ -27,6 +27,17 @@ Item {
         CAnim {}
     }
 
+    // Keyboard focus: take it when the window opens (without it Escape and typing go nowhere), and let Escape step
+    // back out of a sub page before closing the window
+    focus: true
+    Component.onCompleted: forceActiveFocus()
+    Keys.onEscapePressed: {
+        if (nState.subPageIdxStack.length > 0)
+            nState.closeSubPage();
+        else if (nState.isWindow)
+            root.close();
+    }
+
     TapHandler {
         onTapped: root.focus = true
     }

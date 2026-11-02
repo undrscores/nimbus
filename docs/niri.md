@@ -38,9 +38,9 @@ binds {
     Mod+N            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "sidebar"; }
     Mod+Shift+U      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "utilities"; }
     Mod+Shift+A      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "showall"; }
-    Mod+B            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "bar"; }
+    Mod+Ctrl+B       { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "bar"; }
     Mod+Shift+B      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "autoHide"; }
-    Mod+Comma        { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "nexus"; }
+    Mod+S            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "nexus"; }   # toggles settings
     Mod+L            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "lock"; }
     Mod+Shift+L      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "unlock"; }
     Mod+Ctrl+N       { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "clearNotifs"; }

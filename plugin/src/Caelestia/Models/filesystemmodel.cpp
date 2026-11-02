@@ -87,6 +87,17 @@ FileSystemModel::FileSystemModel(QObject* parent)
     , m_filter(Filter::NoFilter) {
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FileSystemModel::watchDirIfRecursive);
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FileSystemModel::updateEntriesForDir);
+    // The root may not exist yet (e.g. ~/Pictures/Wallpapers): we then watch its nearest existing ancestor and start
+    // over once the root appears
+    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this](const QString&) {
+        if (!m_path.isEmpty() && m_watchChanges && !m_watcher.directories().contains(m_path)) {
+            if (QDir(m_path).exists()) {
+                update();
+            } else {
+                updateWatcher();
+            }
+        }
+    });
 }
 
 int FileSystemModel::rowCount(const QModelIndex& parent) const {
@@ -259,6 +270,17 @@ void FileSystemModel::updateWatcher() {
     }
 
     if (!m_watchChanges || m_path.isEmpty()) {
+        return;
+    }
+
+    if (!QDir(m_path).exists()) {
+        // Watch the closest existing ancestor so we notice when the root is created
+        QDir ancestor(m_path);
+        while (!ancestor.exists() && ancestor.cdUp()) {
+        }
+        if (ancestor.exists()) {
+            m_watcher.addPath(ancestor.absolutePath());
+        }
         return;
     }
 

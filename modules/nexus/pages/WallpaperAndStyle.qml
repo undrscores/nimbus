@@ -133,16 +133,16 @@ PageBase {
             id: appOpacity
 
             // Apps themed by `nimbus theme apply` (Alacritty, GTK apps such as Thunar, Zed); 50% to 100%
-            property real opacity: GlobalConfig.appearance.appOpacity
+            property real amount: GlobalConfig.appearance.appOpacity
 
             Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
 
             icon: "opacity"
             label: Tr.tr("App opacity")
-            valueLabel: Strings.percentOne(opacity)
-            value: (opacity - 0.5) / 0.5
+            valueLabel: Strings.percentOne(amount)
+            value: (amount - 0.5) / 0.5
             onMoved: v => {
-                opacity = Math.round((0.5 + 0.5 * v) * 100) / 100;
+                amount = Math.round((0.5 + 0.5 * v) * 100) / 100;
                 applyTimer.restart();
             }
 
@@ -152,8 +152,8 @@ PageBase {
 
                 interval: 400
                 onTriggered: {
-                    GlobalConfig.appearance.appOpacity = appOpacity.opacity;
-                    Quickshell.execDetached(["nimbus", "theme", "apply", "--opacity", String(appOpacity.opacity)]);
+                    GlobalConfig.appearance.appOpacity = appOpacity.amount;
+                    Quickshell.execDetached(["nimbus", "theme", "apply", "--opacity", String(appOpacity.amount)]);
                 }
             }
         }

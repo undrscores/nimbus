@@ -11,8 +11,25 @@ import qs.modules.nexus
 Singleton {
     id: root
 
+    // The open settings window, if any: there is only ever one
+    property var current: null
+
     function create(parent: Item, props: var): void {
-        nexusComp.createObject(parent ?? dummy, props);
+        if (current)
+            return;
+        current = nexusComp.createObject(parent ?? dummy, props);
+    }
+
+    function close(): void {
+        if (current)
+            current.destroy();
+    }
+
+    function toggle(): void {
+        if (current)
+            close();
+        else
+            create();
     }
 
     QtObject {
@@ -31,6 +48,11 @@ Singleton {
             onVisibleChanged: {
                 if (!visible)
                     destroy();
+            }
+
+            Component.onDestruction: {
+                if (root.current === win)
+                    root.current = null;
             }
 
             implicitWidth: nexus.implicitWidth
