@@ -38,3 +38,10 @@ window-rule {
 input {
     focus-follows-mouse max-scroll-amount="0%"
 }
+
+// Optional: open the overview from the top-right corner instead of niri's default top-left.
+gestures {
+    hot-corners {
+        top-right
+    }
+}
