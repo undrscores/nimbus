@@ -1,0 +1,19 @@
+// Nimbus: snippets for ~/.config/niri/config.kdl
+// Replace /path/to/nimbus with your checkout (for example /home/you/Projects/nimbus).
+
+// Start the shell (and stop starting waybar or any other bar).
+spawn-at-startup "/path/to/nimbus/scripts/niri-start.sh"
+
+binds {
+    Mod+Space        hotkey-overlay-title="Nimbus: launcher"          { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "launcher"; }
+    Mod+A            hotkey-overlay-title="Nimbus: dashboard"         { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "dashboard"; }
+    Mod+N            hotkey-overlay-title="Nimbus: sidebar"           { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "sidebar"; }
+    Mod+X            hotkey-overlay-title="Nimbus: session menu"      { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "session"; }
+    Mod+Y            hotkey-overlay-title="Nimbus: utilities"         { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "utilities"; }
+    Mod+Ctrl+Comma   hotkey-overlay-title="Nimbus: settings"          { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "nexus"; }
+    Mod+Shift+D      hotkey-overlay-title="Nimbus: do not disturb"    { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "toggleDnd"; }
+    Mod+Ctrl+N       hotkey-overlay-title="Nimbus: clear notifications" { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "clearNotifs"; }
+    Mod+Shift+S      hotkey-overlay-title="Nimbus: screenshot picker" { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "screenshot"; }
+    Mod+Ctrl+S       hotkey-overlay-title="Nimbus: screenshot to clipboard" { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "screenshotClip"; }
+    Super+Alt+L      hotkey-overlay-title="Nimbus: lock"              { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "lock"; }
+}

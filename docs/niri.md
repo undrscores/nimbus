@@ -1,6 +1,6 @@
-# Running the shell on niri
+# Running Nimbus on niri
 
-This fork talks to niri over its IPC socket (`$NIRI_SOCKET`, see `services/Niri.qml`) and has no Hyprland dependency.
+A ready-to-paste config is in [niri-config.kdl](niri-config.kdl). Nimbus talks to niri over its IPC socket (`$NIRI_SOCKET`, see `services/Niri.qml`) and has no Hyprland dependency.
 
 ## Autostart
 
@@ -14,10 +14,10 @@ From a source checkout built in `./build`, use the helper script, which also set
 library/QML paths for anything installed under `~/.local` (libcava, m3shapes):
 
 ```kdl
-spawn-at-startup "/path/to/caelestia-shell/scripts/niri-start.sh"
+spawn-at-startup "/path/to/nimbus/scripts/niri-start.sh"
 ```
 
-With a checkout, replace `qs -c caelestia` in the binds below with `qs -p /path/to/caelestia-shell/shell.qml`.
+With a checkout, replace `qs -c caelestia` in the binds below with `qs -p /path/to/nimbus/shell.qml`.
 
 ## Keybinds
 
