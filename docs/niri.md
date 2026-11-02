@@ -162,3 +162,13 @@ Alacritty, GTK apps (Thunar, …) and Zed are made translucent by `nimbus theme 
 **App opacity** slider on the Nexus "Wallpaper & style" page, with `appearance.appOpacity` in `shell.json`, or per run
 with `nimbus theme apply --opacity 0.85`. niri blurs what is behind them (see the `background-effect` window rule in
 your `config.kdl`). Apps with their own theming, such as Brave, stay opaque.
+
+Add the `window-rule` from [niri-config.kdl](niri-config.kdl): its `draw-border-with-background false` stops niri
+painting a solid focus-ring block behind the focused window, which otherwise makes translucent windows look opaque
+while focused. GTK3 apps ignore the named colours in `gtk.css`, so `nimbus theme apply` also writes explicit widget
+rules for them (`templates/gtk3.css`).
+
+## Icons
+
+Adwaita's icon theme lacks many app icons. If Papirus is installed (`sudo zypper in papirus-icon-theme`),
+`nimbus theme apply` selects `Papirus-Dark` (or `Papirus` in light mode) for GTK apps.

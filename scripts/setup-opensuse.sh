@@ -25,7 +25,7 @@ packages="git cmake ninja gcc-c++ meson pkgconf-pkg-config
     libqalculate-devel pipewire-devel aubio-devel libsensors4-devel fftw3-devel libiniparser-devel
     python313-Pillow gpu-screen-recorder wf-recorder slurp swappy wl-clipboard libnotify-tools
     ddcutil brightnessctl power-profiles-daemon playerctl libxml2-tools fish
-    nerdfonts-symbolsonly-fonts"
+    nerdfonts-symbolsonly-fonts papirus-icon-theme"
 
 if ask "Install packages with sudo zypper?"; then
     # shellcheck disable=SC2086

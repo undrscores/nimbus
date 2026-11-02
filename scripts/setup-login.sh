@@ -20,7 +20,18 @@ home=""
 [ -n "$user" ] && home="$(getent passwd "$user" | cut -d: -f6)"
 
 echo ":: Installing greetd, regreet and cage"
-zypper -n install greetd regreet cage
+# zypper exits with 100-107 for informational results (e.g. 107: a package script warned) even when the install worked,
+# which must not abort the setup.
+rc=0
+zypper -n install greetd regreet cage || rc=$?
+if [ "$rc" -ne 0 ] && { [ "$rc" -lt 100 ] || [ "$rc" -gt 107 ]; }; then
+    echo "zypper failed with exit code $rc" >&2
+    exit "$rc"
+fi
+[ "$rc" -ne 0 ] && echo ":: zypper reported code $rc (informational), continuing"
+for bin in greetd regreet cage; do
+    command -v "$bin" >/dev/null 2>&1 || { echo "$bin is not installed" >&2; exit 1; }
+done
 
 cfg=/etc/greetd/config.toml
 if [ -f "$cfg" ] && [ ! -f "$cfg.bak-pre-nimbus" ]; then

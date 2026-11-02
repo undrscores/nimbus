@@ -142,12 +142,21 @@ def apply_gtk(colours: dict[str, str], mode: str) -> None:
         )
 
 
+def _icon_theme() -> str | None:
+    """Papirus (with its Dark/Light variant) when installed: Adwaita's icon set lacks many app icons."""
+    return "Papirus-Dark" if (data_dir / "icons" / "Papirus-Dark").is_dir() or Path("/usr/share/icons/Papirus-Dark").is_dir() else None
+
+
 def _set_prefer_dark(path: Path, dark: bool) -> None:
-    """Keep gtk-application-prefer-dark-theme in sync so unthemed widgets (icons, insensitive states) match."""
+    """Keep gtk-application-prefer-dark-theme (and the icon theme) in sync so unthemed widgets match."""
     sections = _parse_ini(path.read_text() if path.exists() else "")
     settings = sections.setdefault("[Settings]", [])
-    settings[:] = [ln for ln in settings if not ln.startswith("gtk-application-prefer-dark-theme")]
+    keys = ("gtk-application-prefer-dark-theme", "gtk-icon-theme-name")
+    settings[:] = [ln for ln in settings if not ln.startswith(keys)]
     settings.append(f"gtk-application-prefer-dark-theme={'true' if dark else 'false'}")
+    icons = _icon_theme()
+    if icons:
+        settings.append(f"gtk-icon-theme-name={icons if dark else icons.replace('-Dark', '')}")
     _write_if_changed(path, _dump_ini(sections))
 
 

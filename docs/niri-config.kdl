@@ -17,3 +17,24 @@ binds {
     Mod+Ctrl+S       hotkey-overlay-title="Nimbus: screenshot to clipboard" { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "screenshotClip"; }
     Super+Alt+L      hotkey-overlay-title="Nimbus: lock"              { spawn "qs" "-p" "/path/to/nimbus/shell.qml" "ipc" "call" "shortcut" "trigger" "lock"; }
 }
+
+// Translucent apps (see "App opacity" in niri.md): blur behind them, rounded corners, and draw the focus ring as an
+// outline only.
+// Without draw-border-with-background false, niri paints a solid block behind the focused window, so translucent
+// windows only look translucent while unfocused.
+window-rule {
+    draw-border-with-background false
+
+    // Rounded window corners (clip so the content, not just the border, follows the radius)
+    geometry-corner-radius 12
+    clip-to-geometry true
+
+    background-effect {
+        blur true
+    }
+}
+
+// Optional: focus the window under the mouse (only windows already fully on screen, so the view never scrolls).
+input {
+    focus-follows-mouse max-scroll-amount="0%"
+}
