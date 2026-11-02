@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell.Io
+import qs.services
 import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
@@ -19,17 +20,16 @@ Item {
 
     function start() {
         xkbXmlBase.running = true;
-        getKbLayoutOpt.running = true;
+        _sync();
     }
 
     function refresh() {
         _notifiedLimit = false;
-        getKbLayoutOpt.running = true;
+        _sync();
     }
 
     function switchTo(idx) {
-        switchProc.command = ["hyprctl", "switchxkblayout", "all", String(idx)];
-        switchProc.running = true;
+        Niri.switchKbLayout(idx);
     }
 
     function _buildXmlMap(xml) {
@@ -63,7 +63,7 @@ Item {
             }
             layoutsModel.clear();
             tmp.forEach(t => layoutsModel.append(t));
-            fetchActiveLayouts.running = true;
+            _sync();
         }
     }
 
@@ -78,24 +78,20 @@ Item {
         return Tr.trCtx("%1 (%2)", "keyboard layout language and code").arg(lang).arg(code);
     }
 
-    function _setLayouts(raw) {
-        const parts = raw.split(",").map(s => s.trim()).filter(Boolean);
+    // Rebuild everything from niri's keyboard layout state.
+    function _sync() {
+        const names = Niri.kbLayoutNames;
         layoutsModel.clear();
+        names.forEach((n, i) => layoutsModel.append({
+            layoutIndex: i,
+            token: n,
+            label: _pretty(n)
+        }));
 
-        const seen = new Set();
-        let idx = 0;
-
-        for (const p of parts) {
-            if (seen.has(p))
-                continue;
-            seen.add(p);
-            layoutsModel.append({
-                layoutIndex: idx,
-                token: p,
-                label: _pretty(p)
-            });
-            idx++;
-        }
+        const idx = Niri.kbLayoutIdx;
+        activeIndex = idx >= 0 && idx < names.length ? idx : -1;
+        activeLabel = activeIndex >= 0 ? layoutsModel.get(activeIndex).label : "";
+        _rebuildVisible();
     }
 
     function _rebuildVisible() {
@@ -157,70 +153,15 @@ Item {
         }
     }
 
-    Process {
-        id: getKbLayoutOpt
-
-        command: ["hyprctl", "-j", "getoption", "input:kb_layout"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const j = JSON.parse(text);
-                    const raw = (j?.str || j?.value || "").toString().trim();
-                    if (raw.length) {
-                        model._setLayouts(raw);
-                        fetchActiveLayouts.running = true;
-                        return;
-                    }
-                } catch (e) {}
-                fetchLayoutsFromDevices.running = true;
-            }
+    Connections {
+        function onKbLayoutNamesChanged(): void {
+            model._sync();
         }
-    }
 
-    Process {
-        id: fetchLayoutsFromDevices
-
-        command: ["hyprctl", "-j", "devices"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const dev = JSON.parse(text);
-                    const kb = dev?.keyboards?.find(k => k.main) || dev?.keyboards?.[0];
-                    const raw = (kb?.layout || "").trim();
-                    if (raw.length)
-                        model._setLayouts(raw);
-                } catch (e) {}
-                fetchActiveLayouts.running = true;
-            }
+        function onKbLayoutIdxChanged(): void {
+            model._sync();
         }
-    }
 
-    Process {
-        id: fetchActiveLayouts
-
-        command: ["hyprctl", "-j", "devices"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const dev = JSON.parse(text);
-                    const kb = dev?.keyboards?.find(k => k.main) || dev?.keyboards?.[0];
-                    const idx = kb?.active_layout_index ?? -1;
-
-                    model.activeIndex = idx >= 0 ? idx : -1;
-                    model.activeLabel = (idx >= 0 && idx < layoutsModel.count) ? layoutsModel.get(idx).label : "";
-                } catch (e) {
-                    model.activeIndex = -1;
-                    model.activeLabel = "";
-                }
-
-                model._rebuildVisible();
-            }
-        }
-    }
-
-    Process {
-        id: switchProc
-
-        onExited: fetchActiveLayouts.running = true
+        target: Niri
     }
 }

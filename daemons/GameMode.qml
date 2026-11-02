@@ -10,20 +10,15 @@ import qs.services
 Scope {
     id: root
 
-    function applyGameMode(): void {
-        Hypr.extras.applyOptions(GlobalConfig.utilities.gameMode.options);
-    }
-
+    // niri has no runtime option setting, so game mode only affects the shell itself
+    // (RuntimeState.gameMode is read by the drawers, desktop clock blur, etc.).
     function syncState(enableDisable: bool): void {
-        if (RuntimeState.gameMode) {
-            root.applyGameMode();
-            if (GlobalConfig.utilities.toasts.gameModeChanged)
-                Toaster.toast(Tr.tr("Game mode enabled"), Tr.tr("Disabled Hyprland animations, blur, gaps and shadows"), "gamepad");
-        } else if (enableDisable) {
-            Hypr.extras.message("reload");
-            if (GlobalConfig.utilities.toasts.gameModeChanged)
-                Toaster.toast(Tr.tr("Game mode disabled"), Tr.tr("Hyprland settings restored"), "gamepad");
-        }
+        if (!enableDisable || !GlobalConfig.utilities.toasts.gameModeChanged)
+            return;
+        if (RuntimeState.gameMode)
+            Toaster.toast(Tr.tr("Game mode enabled"), Tr.tr("Disabled shell blur and rounding"), "gamepad");
+        else
+            Toaster.toast(Tr.tr("Game mode disabled"), Tr.tr("Shell settings restored"), "gamepad");
     }
 
     Component.onCompleted: syncState(false)
@@ -34,15 +29,6 @@ Scope {
         }
 
         target: RuntimeState
-    }
-
-    Connections {
-        function onConfigReloaded(): void {
-            if (RuntimeState.gameMode)
-                root.applyGameMode();
-        }
-
-        target: Hypr
     }
 
     IpcHandler {

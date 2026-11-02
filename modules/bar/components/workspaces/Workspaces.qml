@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Hyprland
 import Caelestia
 import Caelestia.Components
 import Caelestia.Config
@@ -16,9 +15,8 @@ ClipRect {
     required property ShellScreen screen
     required property bool fullscreen
 
-    readonly property HyprlandMonitor monitor: Hypr.monitorFor(screen)
-    readonly property bool onSpecial: monitor?.lastIpcObject.specialWorkspace?.name !== ""
-    readonly property int activeWsId: monitor.activeWorkspace?.id ?? 1
+    readonly property string output: screen.name
+    readonly property int activeWsId: Niri.activeWorkspaceFor(output)?.idx ?? 1
     readonly property int activeWsIdx: workspaceIndex(activeWsId)
     readonly property int shown: Math.max(1, Config.bar.workspaces.shown)
 
@@ -28,17 +26,15 @@ ClipRect {
                 length: shown
             }, (_, i) => i + 1);
 
-        const allMonitors = !Config.bar.workspaces.perMonitor;
-        const ignoredTags = GlobalConfig.bar.workspaces.ignoredTags;
-        const workspaces = Hypr.workspaces.values.filter(w => w.id > 0 && (allMonitors || w.monitor === root.monitor) && (w.id === activeWsId || w.toplevels.values.some(t => !Hypr.isToplevelIgnored(t, ignoredTags))));
-        const currentIdx = workspaces.findIndex(w => w.id === activeWsId);
+        const workspaces = Niri.workspacesFor(root.output).filter(w => w.idx === activeWsId || Niri.windowsForWs(w.id).length > 0);
+        const currentIdx = workspaces.findIndex(w => w.idx === activeWsId);
         if (currentIdx < 0)
             return [];
 
         const end = CUtils.clamp(currentIdx + 1, Math.min(shown, workspaces.length), workspaces.length);
         const start = Math.max(0, end - shown);
 
-        return workspaces.slice(start, end).map(w => w.id);
+        return workspaces.slice(start, end).map(w => w.idx);
     }
 
     readonly property var workspaces: {
@@ -53,7 +49,7 @@ ClipRect {
         return Math.floor((activeWsId - 1) / shown) * shown;
     }
 
-    property real blur: onSpecial ? 1 : 0
+    property real blur: 0
 
     function workspaceIndex(id: int): int {
         if (!Config.bar.workspaces.showUnoccupied)
@@ -73,8 +69,6 @@ ClipRect {
 
     Item {
         anchors.fill: parent
-        scale: root.onSpecial ? 0.8 : 1
-        opacity: root.onSpecial ? 0.5 : 1
         visible: !root.fullscreen
 
         layer.enabled: root.blur > 0
@@ -123,7 +117,7 @@ ClipRect {
             delegate: Workspace {
                 activeWsId: root.activeWsId
                 ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
-                monitor: root.monitor
+                output: root.output
 
                 displayType: Config.bar.workspaces.displayType
                 showWindows: Config.bar.workspaces.showWindows
@@ -175,52 +169,13 @@ ClipRect {
                 const ws = (workspaces.itemAt(event.x, event.y) as Workspace)?.ws;
                 if (!ws)
                     return;
-                if (Hypr.activeWsId !== ws)
-                    Hypr.focusWorkspace(ws);
-                else
-                    Hypr.toggleSpecial("special");
+                if (root.activeWsId !== ws || !Niri.isFocusedScreen(root.screen))
+                    Niri.focusWorkspace(ws, root.output);
             }
         }
 
         Behavior on scale {
             Anim {}
-        }
-
-        Behavior on opacity {
-            Anim {
-                type: Anim.DefaultEffects
-            }
-        }
-    }
-
-    Loader {
-        id: specialWs
-
-        anchors.fill: parent
-
-        asynchronous: true
-        active: opacity > 0
-        opacity: root.onSpecial ? 1 : 0
-
-        sourceComponent: Item {
-            StyledRect {
-                anchors.fill: parent
-                radius: Tokens.rounding.full
-                color: Qt.alpha(Colours.palette.m3scrim, Colours.light ? 0 : 0.2)
-            }
-
-            SpecialWorkspaces {
-                anchors.fill: parent
-                anchors.margins: Tokens.padding.extraSmall
-                monitor: root.monitor
-
-                scale: 0.5
-                Component.onCompleted: scale = Qt.binding(() => root.onSpecial ? 1 : 0.5)
-
-                Behavior on scale {
-                    Anim {}
-                }
-            }
         }
 
         Behavior on opacity {

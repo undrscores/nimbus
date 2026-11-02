@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/0840f496-575c-4ca6-83a8-87bb01a85c5f
 ## Components
 
 - Widgets: [`Quickshell`](https://quickshell.outfoxxed.me)
-- Window manager: [`Hyprland`](https://hypr.land)
+- Window manager: [`niri`](https://github.com/YaLTeR/niri) (this fork is niri-only)
 - Dots: [`caelestia`][dots-repo]
 
 ## Installation
@@ -140,15 +140,12 @@ You can start the shell by running `caelestia shell -d` (preferred) or `qs -c ca
 You may omit `-d` from the command to keep the shell attached to the current terminal if necessary,
 though you likely want it to be detached (so it doesn't close when the terminal is closed).
 
-If using the [Caelestia dotfiles][dots-repo], the shell will be autostarted on login
-via a `hl.on("hyprland.start", ...)` function in the Hyprland config.
+Autostart it from niri with `spawn-at-startup "qs" "-c" "caelestia"` in `config.kdl`. See [docs/niri.md](docs/niri.md).
 
 ### Shortcuts/IPC
 
-All keybinds are accessible via Hyprland [global shortcuts](https://wiki.hypr.land/Configuring/Basics/Binds/#dbus-global-shortcuts).
-If using the [Caelestia dotfiles][dots-repo], the keybinds are already configured for you.
-Otherwise, the [`keybinds.lua`](https://github.com/caelestia-dots/caelestia/blob/main/hypr/hyprland/keybinds.lua#L63-L67) file
-contains an example of how to use global shortcuts.
+niri has no global-shortcuts protocol, so every shortcut is fired over Quickshell IPC:
+`qs -c caelestia ipc call shortcut trigger <name>`. See [docs/niri.md](docs/niri.md) for a complete `binds {}` example.
 
 All IPC commands can be accessed via `caelestia shell ...`, for example:
 
@@ -202,7 +199,7 @@ You can configure per-monitor options in `~/.config/caelestia/monitors/<monitor_
 List the names of your available monitors by running:
 
 ```sh
-hyprctl monitors -j | jq -r '.[].name'
+niri msg --json outputs | jq -r 'keys[]'
 ```
 
 Options set in these files will **override** the respective options in the global config. Any options not present in
@@ -1016,9 +1013,9 @@ The module automatically adds the shell to the path with **full functionality**.
 
 You can join the Caelestia Discord server for assistance and discussion [here][discord].
 
-### I want to make my own changes to the Hyprland config!
+### I want to make my own changes to the niri config!
 
-Check out the configuring section on the [dots repo](https://github.com/caelestia-dots/caelestia#configuring).
+See [docs/niri.md](docs/niri.md) and the [niri wiki](https://yalter.github.io/niri/).
 
 ### I want to make my own changes to other stuff!
 

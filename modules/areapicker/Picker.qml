@@ -18,8 +18,9 @@ MouseArea {
 
     property bool onClient
 
-    property real realBorderWidth: onClient ? (Hypr.options["general:border_size"] ?? 1) : 2
-    property real realRounding: onClient ? (Hypr.options["decoration:rounding"] ?? 0) : 0
+    // niri has no runtime option query, so use fixed values
+    property real realBorderWidth: 2
+    property real realRounding: onClient ? 12 : 0
 
     property real ssx
     property real ssy
@@ -34,47 +35,35 @@ MouseArea {
     property real sw: Math.abs(sx - ex)
     property real sh: Math.abs(sy - ey)
 
+    // Windows on this output's active workspace that niri reports a position for
+    // (tiled windows in view; floating windows have no position in niri's IPC).
     property list<var> clients: {
-        const mon = Hypr.monitorFor(screen);
-        if (!mon)
+        const ws = Niri.activeWorkspaceFor(screen.name);
+        if (!ws)
             return [];
 
-        const special = mon.lastIpcObject?.specialWorkspace;
-        const wsId = special?.name ? special.id : mon.activeWorkspace?.id;
-        if (wsId === undefined)
-            return [];
-
-        return Hypr.toplevelsForWs(wsId).sort((a, b) => {
-            // Pinned first, then fullscreen, then floating, then any other
-            const ac = a?.lastIpcObject;
-            const bc = b?.lastIpcObject;
-            if (!ac || !bc)
-                return !ac - !bc; // Missing IPC last
-            return (bc.pinned - ac.pinned) || ((bc.fullscreen !== 0) - (ac.fullscreen !== 0)) || (bc.floating - ac.floating);
-        });
+        return Niri.windowsForWs(ws.id).map(w => {
+            const l = w.layout;
+            if (!l?.tile_pos_in_workspace_view || !l?.window_size)
+                return null;
+            const off = l.window_offset_in_tile ?? [0, 0];
+            return {
+                x: l.tile_pos_in_workspace_view[0] + off[0],
+                y: l.tile_pos_in_workspace_view[1] + off[1],
+                w: l.window_size[0],
+                h: l.window_size[1]
+            };
+        }).filter(c => c);
     }
 
     function checkClientRects(x: real, y: real): void {
-        for (const client of clients) {
-            if (!client)
-                continue;
-
-            const ipc = client.lastIpcObject;
-            if (!ipc?.at || !ipc?.size)
-                continue;
-
-            let {
-                at: [cx, cy],
-                size: [cw, ch]
-            } = ipc;
-            cx -= screen.x;
-            cy -= screen.y;
-            if (cx <= x && cy <= y && cx + cw >= x && cy + ch >= y) {
+        for (const c of clients) {
+            if (c.x <= x && c.y <= y && c.x + c.w >= x && c.y + c.h >= y) {
                 onClient = true;
-                sx = cx;
-                sy = cy;
-                ex = cx + cw;
-                ey = cy + ch;
+                sx = c.x;
+                sy = c.y;
+                ex = c.x + c.w;
+                ey = c.y + c.h;
                 break;
             }
         }
@@ -101,23 +90,19 @@ MouseArea {
     cursorShape: Qt.CrossCursor
 
     Component.onCompleted: {
-        Hypr.extras.refreshOptions();
-
         // Break binding if frozen
         if (loader.freeze)
             clients = clients;
 
         opacity = 1;
 
-        const ipc = clients[0]?.lastIpcObject;
-        if (ipc?.at && ipc?.size) {
-            const cx = ipc.at[0] - screen.x;
-            const cy = ipc.at[1] - screen.y;
+        const c = clients[0];
+        if (c) {
             onClient = true;
-            sx = cx;
-            sy = cy;
-            ex = cx + ipc.size[0];
-            ey = cy + ipc.size[1];
+            sx = c.x;
+            sy = c.y;
+            ex = c.x + c.w;
+            ey = c.y + c.h;
         } else {
             sx = screen.width / 2 - 100;
             sy = screen.height / 2 - 100;
@@ -197,17 +182,6 @@ MouseArea {
             target: root.loader
             property: "activeAsync"
             value: false
-        }
-    }
-
-    Process {
-        running: true
-        command: ["hyprctl", "cursorpos", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const pos = JSON.parse(text);
-                root.checkClientRects(pos.x - root.screen.x, pos.y - root.screen.y);
-            }
         }
     }
 

@@ -92,11 +92,11 @@ ColumnLayout {
 
             WButton {
                 required property int index
-                readonly property int wsId: Math.floor((Hypr.activeWsId - 1) / 10) * 10 + index + 1
-                readonly property bool isCurrent: root.client?.workspace.id === wsId
+                readonly property int wsId: Math.floor((Niri.activeWsIdx - 1) / 10) * 10 + index + 1
+                readonly property bool isCurrent: Niri.workspaces.find(w => w.id === root.client?.workspace_id)?.idx === wsId
 
                 onClicked: {
-                    Hypr.dispatch(Hypr.usingLua ? `hl.dsp.window.move({ window = "address:0x${root.client?.address}", workspace = "${wsId}", follow = true })` : `movetoworkspace ${wsId},address:0x${root.client?.address}`);
+                    Niri.moveWindowToWorkspace(root.client.id, wsId);
                 }
 
                 color: isCurrent ? Colours.tPalette.m3surfaceContainerHighest : Colours.palette.m3tertiaryContainer
@@ -113,35 +113,20 @@ ColumnLayout {
         Layout.rightMargin: Tokens.padding.large
         Layout.bottomMargin: Tokens.padding.large
 
-        spacing: root.client?.lastIpcObject.floating ? Tokens.spacing.medium : Tokens.spacing.small
+        spacing: root.client?.is_floating ? Tokens.spacing.medium : Tokens.spacing.small
 
         WButton {
             color: Colours.palette.m3secondaryContainer
             textColor: Colours.palette.m3onSecondaryContainer
-            text: root.client?.lastIpcObject.floating ? Tr.tr("Tile") : Tr.tr("Float")
-            onClicked: Hypr.dispatch(Hypr.usingLua ? `hl.dsp.window.float({ window = "address:0x${root.client?.address}" })` : `togglefloating address:0x${root.client?.address}`)
-        }
-
-        Loader {
-            asynchronous: true
-            active: root.client?.lastIpcObject.floating ?? false
-            Layout.fillWidth: active
-            Layout.leftMargin: active ? 0 : -parent.spacing
-            Layout.rightMargin: active ? 0 : -parent.spacing
-
-            sourceComponent: WButton {
-                color: Colours.palette.m3secondaryContainer
-                textColor: Colours.palette.m3onSecondaryContainer
-                text: root.client?.lastIpcObject.pinned ? Tr.tr("Unpin") : Tr.tr("Pin")
-                onClicked: Hypr.dispatch(Hypr.usingLua ? `hl.dsp.window.pin({ window = "address:0x${root.client?.address}" })` : `pin address:0x${root.client?.address}`)
-            }
+            text: root.client?.is_floating ? Tr.tr("Tile") : Tr.tr("Float")
+            onClicked: Niri.toggleFloating(root.client.id)
         }
 
         WButton {
             color: Colours.palette.m3errorContainer
             textColor: Colours.palette.m3onErrorContainer
-            text: Tr.tr("Kill")
-            onClicked: Hypr.dispatch(Hypr.usingLua ? `hl.dsp.window.kill({ window = "address:0x${root.client?.address}" })` : `killwindow address:0x${root.client?.address}`)
+            text: Tr.tr("Close")
+            onClicked: Niri.closeWindow(root.client.id)
         }
     }
 

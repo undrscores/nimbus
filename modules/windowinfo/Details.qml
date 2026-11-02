@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Hyprland
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
@@ -9,7 +8,7 @@ import qs.services
 ColumnLayout {
     id: root
 
-    required property HyprlandToplevel client
+    required property var client // niri window
 
     anchors.fill: parent
     spacing: Tokens.spacing.small
@@ -24,7 +23,7 @@ ColumnLayout {
     }
 
     Label {
-        text: root.client?.lastIpcObject.class ?? Tr.tr("No active client")
+        text: root.client?.app_id ?? Tr.tr("No active client")
         color: Colours.palette.m3tertiary
 
         font: Tokens.font.body.large
@@ -43,104 +42,54 @@ ColumnLayout {
 
     Detail {
         icon: "location_on"
-        text: {
-            const addr = root.client?.address;
-            if (addr)
-                return Tr.trCtx("Address: %1", "window address").arg(`0x${addr}`);
-            return Tr.trCtx("Address: unknown", "window address");
-        }
+        text: Tr.trCtx("Window id: %1", "window id").arg(root.client?.id ?? "unknown")
         color: Colours.palette.m3primary
     }
 
     Detail {
         icon: "location_searching"
-        // TRANSLATORS: %1/%2 = x and y position in pixels
-        text: Tr.tr("Position: %1, %2").arg(root.client?.lastIpcObject.at[0] ?? -1).arg(root.client?.lastIpcObject.at[1] ?? -1)
+        // TRANSLATORS: %1 = column index, %2 = tile index in the column
+        text: Tr.tr("Position: %1, %2").arg(root.client?.layout?.pos_in_scrolling_layout?.[0] ?? -1).arg(root.client?.layout?.pos_in_scrolling_layout?.[1] ?? -1)
     }
 
     Detail {
         icon: "resize"
         // TRANSLATORS: %1/%2 = width and height in pixels; the x is a multiplication sign
-        text: Tr.tr("Size: %1 x %2").arg(root.client?.lastIpcObject.size[0] ?? -1).arg(root.client?.lastIpcObject.size[1] ?? -1)
+        text: Tr.tr("Size: %1 x %2").arg(root.client?.layout?.window_size?.[0] ?? -1).arg(root.client?.layout?.window_size?.[1] ?? -1)
         color: Colours.palette.m3tertiary
     }
 
     Detail {
         icon: "workspaces"
-        // TRANSLATORS: %1 = workspace name, %2 = workspace id
-        text: Tr.tr("Workspace: %1 (%2)").arg(root.client?.workspace.name ?? -1).arg(root.client?.workspace.id ?? -1)
+        // TRANSLATORS: %1 = workspace name, %2 = workspace index
+        text: {
+            const ws = Niri.workspaces.find(w => w.id === root.client?.workspace_id);
+            return Tr.tr("Workspace: %1 (%2)").arg(ws?.name ?? ws?.idx ?? -1).arg(ws?.idx ?? -1);
+        }
         color: Colours.palette.m3secondary
     }
 
     Detail {
         icon: "desktop_windows"
         text: {
-            const mon = root.client?.monitor;
-            if (mon)
-                // TRANSLATORS: %1 = monitor name, %2 = monitor id, %3/%4 = x/y position in pixels
-                return Tr.tr("Monitor: %1 (%2) at %3, %4").arg(mon.name).arg(mon.id).arg(mon.x).arg(mon.y);
+            const ws = Niri.workspaces.find(w => w.id === root.client?.workspace_id);
+            if (ws)
+                return Tr.tr("Monitor: %1").arg(ws.output);
             return Tr.tr("Monitor: unknown");
-        }
-    }
-
-    Detail {
-        icon: "page_header"
-        text: {
-            const title = root.client?.lastIpcObject.initialTitle;
-            if (title)
-                return Tr.tr("Initial title: %1").arg(title);
-            return Tr.tr("Initial title: unknown");
-        }
-        color: Colours.palette.m3tertiary
-    }
-
-    Detail {
-        icon: "category"
-        text: {
-            const cls = root.client?.lastIpcObject.initialClass;
-            if (cls)
-                return Tr.tr("Initial class: %1").arg(cls);
-            return Tr.tr("Initial class: unknown");
         }
     }
 
     Detail {
         icon: "account_tree"
         // TRANSLATORS: %1 = process id
-        text: Tr.tr("Process id: %1").arg(String(root.client?.lastIpcObject.pid ?? -1))
+        text: Tr.tr("Process id: %1").arg(String(root.client?.pid ?? -1))
         color: Colours.palette.m3primary
     }
 
     Detail {
         icon: "picture_in_picture_center"
-        text: root.client?.lastIpcObject.floating ? Tr.tr("Floating: yes") : Tr.tr("Floating: no")
+        text: root.client?.is_floating ? Tr.tr("Floating: yes") : Tr.tr("Floating: no")
         color: Colours.palette.m3secondary
-    }
-
-    Detail {
-        icon: "gradient"
-        text: root.client?.lastIpcObject.xwayland ? Tr.tr("Xwayland: yes") : Tr.tr("Xwayland: no")
-    }
-
-    Detail {
-        icon: "keep"
-        text: root.client?.lastIpcObject.pinned ? Tr.tr("Pinned: yes") : Tr.tr("Pinned: no")
-        color: Colours.palette.m3secondary
-    }
-
-    Detail {
-        icon: "fullscreen"
-        text: {
-            const fs = root.client?.lastIpcObject.fullscreen;
-            if (fs === 0)
-                return Tr.tr("Fullscreen state: off");
-            if (fs === 1)
-                return Tr.tr("Fullscreen state: maximised");
-            if (fs !== undefined)
-                return Tr.tr("Fullscreen state: on");
-            return Tr.tr("Fullscreen state: unknown");
-        }
-        color: Colours.palette.m3tertiary
     }
 
     Item {
