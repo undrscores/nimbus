@@ -72,6 +72,22 @@ if ! fc-list | grep -qi "material symbols rounded" || ! fc-list | grep -qi "rubi
     fi
 fi
 
+# The shell's default UI font is Google Sans Flex and its monospace font is CaskaydiaCove NF; without them it falls
+# back to Noto Sans / Source Code Pro.
+if ! fc-list | grep -qi "google sans flex" || ! fc-list | grep -qi "caskaydiacove"; then
+    if ask "Download Google Sans Flex and CaskaydiaCove Nerd Font (github.com/google, ryanoasis/nerd-fonts) to $fontdir?"; then
+        mkdir -p "$fontdir" "$deps/fonts-dl/cascadia"
+        curl -fsSL -o "$deps/fonts-dl/GoogleSansFlex.ttf" \
+            'https://github.com/google/fonts/raw/main/ofl/googlesansflex/GoogleSansFlex%5BROND%2Copsz%2Cslnt%2Cwdth%2Cwght%5D.ttf'
+        curl -fsSL -o "$deps/fonts-dl/CascadiaCode.tar.xz" \
+            'https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CascadiaCode.tar.xz'
+        tar -xJf "$deps/fonts-dl/CascadiaCode.tar.xz" -C "$deps/fonts-dl/cascadia"
+        cp "$deps/fonts-dl/GoogleSansFlex.ttf" "$fontdir/"
+        cp "$deps/fonts-dl"/cascadia/CaskaydiaCoveNerdFont-*.ttf "$fontdir/"
+        fc-cache -f "$fontdir"
+    fi
+fi
+
 # ------------------------------------------------------------------ helper CLI
 if ! command -v nimbus >/dev/null 2>&1; then
     if ask "Install the helper CLI (creates a venv and installs materialyoucolor from PyPI)?"; then

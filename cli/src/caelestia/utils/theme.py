@@ -7,12 +7,15 @@ logged and does not stop the others. Disable a target in `~/.config/caelestia/cl
     { "theme": { "alacritty": false, "niri": true, "gtk": true, "qt": true, "zed": true } }
 
 Template placeholders: `{{name}}` is a scheme colour as `rrggbb`, `{{name.rgb}}` is `r,g,b` (decimal), `{{mode}}` is
-`dark`/`light` and `{{appearance}}` is the same, for apps that call it that.
+`dark`/`light` and `{{appearance}}` is the same, for apps that call it that. `{{opacity}}` is the window opacity
+(`0.9`) and `{{opacity_hex}}` the same as a two-digit hex alpha (`e6`). The opacity comes from `--opacity`, else the
+"App opacity" slider (`appearance.appOpacity` in shell.json), else `theme.opacity` in cli.json.
 
 Files the user owns (alacritty.toml, niri's config.kdl, Zed's settings.json) are only touched by `setup()`
 (`nimbus theme setup`), which wires them to the generated files once.
 """
 
+import json
 import re
 import shutil
 import subprocess
@@ -21,6 +24,7 @@ from pathlib import Path
 from caelestia.utils.io import error, log, log_exception, warn
 from caelestia.utils.paths import (
     atomic_write,
+    c_config_dir,
     config_dir,
     data_dir,
     get_config,
@@ -33,11 +37,47 @@ GTK_MARKER = "/* caelestia-managed */"
 _PLACEHOLDER = re.compile(r"\{\{\s*([A-Za-z0-9_]+)(?:\.(rgb))?\s*\}\}")
 
 
+_opacity_override: float | None = None
+
+
+def set_opacity_override(opacity: float | None) -> None:
+    global _opacity_override
+    _opacity_override = opacity
+
+
+def _shell_opacity() -> float | None:
+    """The slider in the Nimbus settings stores the opacity in the shell config."""
+    try:
+        return json.loads((c_config_dir / "shell.json").read_text())["appearance"]["appOpacity"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def get_opacity() -> float:
+    """Window opacity for themed apps: --opacity, then the shell config, then cli.json, then 0.9."""
+    value = _opacity_override
+    if value is None:
+        value = _shell_opacity()
+    if value is None:
+        value = get_config().get("theme", {}).get("opacity", 0.9)
+    try:
+        return min(1.0, max(0.0, float(value)))
+    except (TypeError, ValueError):
+        warn("opacity must be a number between 0 and 1, using 0.9")
+        return 0.9
+
+
 def render(template: str, colours: dict[str, str], mode: str) -> str:
+    opacity = get_opacity()
+
     def sub(m: re.Match[str]) -> str:
         name, fmt = m.group(1), m.group(2)
         if name in ("mode", "appearance") and fmt is None:
             return mode
+        if name == "opacity" and fmt is None:
+            return f"{opacity:g}"
+        if name == "opacity_hex" and fmt is None:
+            return f"{round(opacity * 255):02x}"
         hexa = colours.get(name)
         if hexa is None:
             raise KeyError(f"scheme has no colour '{name}'")

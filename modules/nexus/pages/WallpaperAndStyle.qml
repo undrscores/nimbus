@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Caelestia.Components
 import Caelestia.Config
 import Caelestia.I18n
@@ -126,6 +127,35 @@ PageBase {
             subtext: Tr.tr("Base %1, layers %2").arg(Colours.transparency.base).arg(Colours.transparency.layers)
             checked: Colours.transparency.enabled
             onToggled: GlobalConfig.appearance.transparency.enabled = checked
+        }
+
+        SliderRow {
+            id: appOpacity
+
+            // Apps themed by `nimbus theme apply` (Alacritty, GTK apps such as Thunar, Zed); 50% to 100%
+            property real opacity: GlobalConfig.appearance.appOpacity
+
+            Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
+
+            icon: "opacity"
+            label: Tr.tr("App opacity")
+            valueLabel: Strings.percentOne(opacity)
+            value: (opacity - 0.5) / 0.5
+            onMoved: v => {
+                opacity = Math.round((0.5 + 0.5 * v) * 100) / 100;
+                applyTimer.restart();
+            }
+
+            // Save and re-theme once the slider settles, not on every drag step
+            Timer {
+                id: applyTimer
+
+                interval: 400
+                onTriggered: {
+                    GlobalConfig.appearance.appOpacity = appOpacity.opacity;
+                    Quickshell.execDetached(["nimbus", "theme", "apply", "--opacity", String(appOpacity.opacity)]);
+                }
+            }
         }
 
         ToggleRow {

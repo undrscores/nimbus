@@ -48,6 +48,9 @@ def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
 
     theme_apply_parser = theme_command_parser.add_parser("apply", help="re-apply the current scheme to all apps")
     theme_apply_parser.set_defaults(cls=theme.Apply)
+    theme_apply_parser.add_argument(
+        "-o", "--opacity", type=float, metavar="0-1", help="window opacity for themed apps (default: shell setting)"
+    )
 
     theme_setup_parser = theme_command_parser.add_parser(
         "setup", help="one-time wiring of alacritty/niri/zed configs to the generated colours"

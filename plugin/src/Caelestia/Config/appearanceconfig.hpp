@@ -274,6 +274,8 @@ class AppearanceConfig : public settings::ObjectNode {
     CONFIG_NODE(AppearanceConfig, settings::ObjectNode)
 
     CONFIG_PROPERTY(qreal, deformScale, 1)
+    // Opacity of other apps themed by `nimbus theme apply` (Alacritty, GTK apps, Zed), from 0 to 1
+    CONFIG_GLOBAL_PROPERTY(qreal, appOpacity, 0.9)
     CONFIG_SUBOBJECT(AppearanceRounding, rounding)
     CONFIG_SUBOBJECT(AppearanceSpacing, spacing)
     CONFIG_SUBOBJECT(AppearancePadding, padding)

@@ -226,7 +226,8 @@ For example, to automatically hide the bar on the monitor named `DP-1`:
             "enabled": false,
             "base": 0.85,
             "layers": 0.4
-        }
+        },
+        "appOpacity": 0.9
     },
     "general": {
         "logo": "",

@@ -147,3 +147,18 @@ less exact than a dedicated Qt palette.
 The `qt` target is for the KDE platform theme instead: it writes `~/.config/kdeglobals`, which Qt reads through
 `plasma6-integration-plugin` with `QT_QPA_PLATFORMTHEME=kde`. That plugin pulls in `xdg-desktop-portal-kde6` and
 `plasma6-workspace`, and a KDE portal competes with the GTK/GNOME ones, so it is only worth it on a KDE-flavoured setup.
+
+## Login screen
+
+A bare niri install boots to a text console. `scripts/setup-login.sh` (run it with `sudo`) installs greetd with the
+ReGreet GTK greeter inside the `cage` kiosk compositor, uses your wallpaper as the background and the Nimbus UI font,
+and lists the Niri session. It only takes effect on the next boot and keeps the old `/etc/greetd/config.toml` as
+`config.toml.bak-pre-nimbus`. To go back to the text console: `sudo systemctl disable greetd && sudo systemctl
+set-default multi-user.target` (Ctrl+Alt+F2 gives you a text console if the greeter ever fails).
+
+## App opacity
+
+Alacritty, GTK apps (Thunar, …) and Zed are made translucent by `nimbus theme apply`. Set the opacity with the
+**App opacity** slider on the Nexus "Wallpaper & style" page, with `appearance.appOpacity` in `shell.json`, or per run
+with `nimbus theme apply --opacity 0.85`. niri blurs what is behind them (see the `background-effect` window rule in
+your `config.kdl`). Apps with their own theming, such as Brave, stay opaque.
