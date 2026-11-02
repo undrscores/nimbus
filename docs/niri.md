@@ -129,5 +129,21 @@ Templates live in [`cli/src/caelestia/data/templates`](../cli/src/caelestia/data
 `~/.config/caelestia/templates/` to override it. `{{name}}` is a scheme colour as `rrggbb`, `{{name.rgb}}` is `r,g,b`
 and `{{mode}}` is `dark` or `light`.
 
-For Qt apps to honour the KDE colours outside Plasma, start your session with `QT_QPA_PLATFORMTHEME=kde`
-(for niri: an `environment { QT_QPA_PLATFORMTHEME "kde"; }` block).
+### Qt apps (qBittorrent, OBS…)
+
+Qt apps only pick up a theme through a platform theme plugin, which a plain niri session does not load. The simplest
+route needs no extra packages: install `qt6-platformtheme-gtk3` (usually already present) and start the session with
+`QT_QPA_PLATFORMTHEME=gtk3`, e.g. in niri's `config.kdl` (log out and back in once):
+
+```kdl
+environment {
+    QT_QPA_PLATFORMTHEME "gtk3"
+}
+```
+
+Qt apps then follow the generated `gtk.css`, so the `qt` target is not needed (`"qt": false` in `cli.json`). Colours are
+less exact than a dedicated Qt palette.
+
+The `qt` target is for the KDE platform theme instead: it writes `~/.config/kdeglobals`, which Qt reads through
+`plasma6-integration-plugin` with `QT_QPA_PLATFORMTHEME=kde`. That plugin pulls in `xdg-desktop-portal-kde6` and
+`plasma6-workspace`, and a KDE portal competes with the GTK/GNOME ones, so it is only worth it on a KDE-flavoured setup.
