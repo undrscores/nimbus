@@ -77,7 +77,7 @@ Singleton {
     }
 
     function setMode(mode: string): void {
-        Quickshell.execDetached(["caelestia", "scheme", "set", "--notify", "-m", mode]);
+        Quickshell.execDetached(["nimbus", "scheme", "set", "--notify", "-m", mode]);
     }
 
     // Layer blur rules are static in niri's config (see docs/niri.md), so nothing to push to the compositor.

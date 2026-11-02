@@ -21,10 +21,10 @@ so the upstream look carries over.
 | Workspaces | numbered, plus special workspaces | niri's per-output workspaces; special workspaces removed |
 | Caps/num lock | Hyprland device info | keyboard LEDs in `/sys/class/leds` |
 | Fullscreen detection | Hyprland client flag | window size vs output size |
-| `caelestia` CLI | upstream CLI | trimmed fork in [`cli/`](cli): wallpaper, scheme, record |
+| `caelestia` CLI | upstream CLI | trimmed fork in [`cli/`](cli): wallpaper, scheme, theme, record |
 
 Known limitations: the area picker cannot snap to windows (niri reports no window positions), game mode only affects the
-shell, there is no window pin button, and app theming (terminals, GTK, Discord…) from the upstream CLI is not included.
+shell and there is no window pin button. App theming covers Alacritty, niri, GTK, Qt/KDE and Zed only; see [docs/niri.md](docs/niri.md#app-theming).
 Details are in [docs/niri.md](docs/niri.md).
 
 ## Install

@@ -1,0 +1,47 @@
+[colors.primary]
+background = "#{{background}}"
+foreground = "#{{onSurface}}"
+
+[colors.cursor]
+text = "#{{background}}"
+cursor = "#{{primary}}"
+
+[colors.vi_mode_cursor]
+text = "#{{background}}"
+cursor = "#{{tertiary}}"
+
+[colors.selection]
+text = "#{{onPrimaryContainer}}"
+background = "#{{primaryContainer}}"
+
+[colors.search.matches]
+foreground = "#{{onSecondaryContainer}}"
+background = "#{{secondaryContainer}}"
+
+[colors.search.focused_match]
+foreground = "#{{onPrimary}}"
+background = "#{{primary}}"
+
+[colors.footer_bar]
+foreground = "#{{onSurfaceVariant}}"
+background = "#{{surfaceContainer}}"
+
+[colors.normal]
+black = "#{{term0}}"
+red = "#{{term1}}"
+green = "#{{term2}}"
+yellow = "#{{term3}}"
+blue = "#{{term4}}"
+magenta = "#{{term5}}"
+cyan = "#{{term6}}"
+white = "#{{term7}}"
+
+[colors.bright]
+black = "#{{term8}}"
+red = "#{{term9}}"
+green = "#{{term10}}"
+yellow = "#{{term11}}"
+blue = "#{{term12}}"
+magenta = "#{{term13}}"
+cyan = "#{{term14}}"
+white = "#{{term15}}"

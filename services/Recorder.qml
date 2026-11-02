@@ -52,14 +52,14 @@ Singleton {
             const running = code === 0;
 
             if (running && root.needsStop) {
-                commandProc.exec(["caelestia", "record"]);
+                commandProc.exec(["nimbus", "record"]);
                 props.running = false;
                 props.paused = false;
             } else if (running && root.needsPause) {
-                commandProc.exec(["caelestia", "record", "-p"]);
+                commandProc.exec(["nimbus", "record", "-p"]);
                 props.paused = !props.paused;
             } else if (!running && root.needsStart) {
-                commandProc.exec(["caelestia", "record", ...root.startArgs]);
+                commandProc.exec(["nimbus", "record", ...root.startArgs]);
                 props.running = true;
                 props.paused = false;
                 props.elapsed = 0;
@@ -80,7 +80,7 @@ Singleton {
     Process {
         id: commandProc
 
-        // The command owns the transition: `caelestia record` blocks on slurp for
+        // The command owns the transition: `nimbus record` blocks on slurp for
         // region captures, and waits for the recorder to finalise the file when
         // stopping. Reconcile once it has actually finished.
         onExited: checkProc.running = true

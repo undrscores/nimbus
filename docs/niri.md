@@ -95,3 +95,39 @@ nothing is drawn on screen until you ask for it.
   away), or with the `bar` shortcut. In auto-hide mode the bar only overlays windows and never reserves space.
 - Dashboard, launcher, sidebar, session menu, utilities and OSD keep working: they slide in from their screen edge
   on hover, drag or keybind exactly as before.
+
+## App theming
+
+Setting a wallpaper with a `dynamic` scheme regenerates the Material You palette, and `caelestia` applies it to other
+apps at the same time (`nimbus wallpaper`, `nimbus scheme set` and `nimbus theme apply` all do this):
+
+| App | What is written | How it updates |
+| --- | --- | --- |
+| Alacritty | `~/.local/state/caelestia/theme/alacritty.toml`, imported by `alacritty.toml` | live reload |
+| niri | `~/.local/state/caelestia/theme/niri.kdl` (focus ring and border colours), `include`d last in `config.kdl` | niri reloads included files |
+| GTK 3/4 | `~/.config/gtk-{3,4}.0/gtk.css` (named colours) and `color-scheme` via gsettings | on app start |
+| Qt/KDE (Dolphin…) | `~/.local/share/color-schemes/Caelestia.colors`, merged into `~/.config/kdeglobals`, plus a palette-changed D-Bus signal | running KDE apps update live |
+| Zed | `~/.config/zed/themes/caelestia.json`, selected in `settings.json` | live |
+
+```sh
+nimbus theme setup           # once: wires alacritty.toml, niri's config.kdl and Zed's settings.json
+nimbus scheme set -n dynamic # derive colours from the wallpaper (other schemes are themed too)
+nimbus theme apply           # re-apply the current scheme without changing it
+```
+
+`theme setup` backs up niri's config to `config.kdl.bak-pre-theming` and refuses to edit an `alacritty.toml` or Zed
+`settings.json` that already exists (it prints the line to add instead). `gtk.css` files that Nimbus did not write are
+left alone.
+
+Turn targets off in `~/.config/caelestia/cli.json`:
+
+```json
+{ "theme": { "alacritty": true, "niri": true, "gtk": true, "qt": true, "zed": false } }
+```
+
+Templates live in [`cli/src/caelestia/data/templates`](../cli/src/caelestia/data/templates). Copy one to
+`~/.config/caelestia/templates/` to override it. `{{name}}` is a scheme colour as `rrggbb`, `{{name.rgb}}` is `r,g,b`
+and `{{mode}}` is `dark` or `light`.
+
+For Qt apps to honour the KDE colours outside Plasma, start your session with `QT_QPA_PLATFORMTHEME=kde`
+(for niri: an `environment { QT_QPA_PLATFORMTHEME "kde"; }` block).

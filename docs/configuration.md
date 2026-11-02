@@ -539,7 +539,7 @@ For example, to automatically hide the bar on the monitor named `DP-1`:
                 "name": "Random",
                 "icon": "casino",
                 "description": "Switch to a random wallpaper",
-                "command": ["caelestia", "wallpaper", "-r"],
+                "command": ["nimbus", "wallpaper", "-r"],
                 "enabled": true,
                 "dangerous": false
             },
@@ -603,7 +603,7 @@ For example, to automatically hide the bar on the monitor named `DP-1`:
                 "name": "Settings",
                 "icon": "settings",
                 "description": "Configure the shell",
-                "command": ["caelestia", "shell", "nexus", "open"],
+                "command": ["qs", "-c", "caelestia", "ipc", "call", "shortcut", "trigger", "nexus"],
                 "enabled": true,
                 "dangerous": false
             }
@@ -805,12 +805,12 @@ If there is no corresponding option, make a [feature request](https://github.com
 
 ### How do I make my colour scheme change to match my wallpaper?
 
-Set a wallpaper via `>wallpaper` in the launcher or `caelestia wallpaper`, and set the scheme to the dynamic scheme via
-`>scheme` in the launcher or `caelestia scheme set`, e.g.:
+Set a wallpaper via `>wallpaper` in the launcher or `nimbus wallpaper`, and set the scheme to the dynamic scheme via
+`>scheme` in the launcher or `nimbus scheme set`, e.g.:
 
 ```sh
-caelestia wallpaper -f <path_to_wallpaper>
-caelestia scheme set -n dynamic
+nimbus wallpaper -f <path_to_wallpaper>
+nimbus scheme set -n dynamic
 ```
 
 ### My wallpapers aren't showing up in the launcher!

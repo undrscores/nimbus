@@ -1,6 +1,6 @@
 import argparse
 
-from caelestia.subcommands import record, scheme, wallpaper
+from caelestia.subcommands import record, scheme, theme, wallpaper
 from caelestia.utils.paths import wallpapers_dir
 from caelestia.utils.scheme import get_scheme_names, scheme_variants
 from caelestia.utils.wallpaper import get_wallpaper
@@ -8,7 +8,7 @@ from caelestia.utils.wallpaper import get_wallpaper
 
 def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     parser = argparse.ArgumentParser(
-        prog="caelestia", description="Helper CLI for the Caelestia shell on niri (wallpaper, scheme, record)"
+        prog="nimbus", description="Helper CLI for the Nimbus shell on niri (wallpaper, scheme, record)"
     )
 
     command_parser = parser.add_subparsers(
@@ -41,6 +41,18 @@ def parse_args() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     set_parser.add_argument("-f", "--flavour", help="the flavour to switch to")
     set_parser.add_argument("-m", "--mode", choices=["dark", "light"], help="the mode to switch to")
     set_parser.add_argument("-v", "--variant", choices=scheme_variants, help="the variant to switch to")
+
+    # theme
+    theme_parser = command_parser.add_parser("theme", help="apply the scheme to other apps (alacritty, niri, gtk, qt, zed)")
+    theme_command_parser = theme_parser.add_subparsers(title="subcommands")
+
+    theme_apply_parser = theme_command_parser.add_parser("apply", help="re-apply the current scheme to all apps")
+    theme_apply_parser.set_defaults(cls=theme.Apply)
+
+    theme_setup_parser = theme_command_parser.add_parser(
+        "setup", help="one-time wiring of alacritty/niri/zed configs to the generated colours"
+    )
+    theme_setup_parser.set_defaults(cls=theme.Setup)
 
     # record
     record_parser = command_parser.add_parser("record", help="start a screen recording")

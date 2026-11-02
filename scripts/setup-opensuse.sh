@@ -73,7 +73,7 @@ if ! fc-list | grep -qi "material symbols rounded" || ! fc-list | grep -qi "rubi
 fi
 
 # ------------------------------------------------------------------ helper CLI
-if ! command -v caelestia >/dev/null 2>&1; then
+if ! command -v nimbus >/dev/null 2>&1; then
     if ask "Install the helper CLI (creates a venv and installs materialyoucolor from PyPI)?"; then
         "$root/scripts/install-cli.sh"
     fi

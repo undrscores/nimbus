@@ -11,7 +11,8 @@ requires-python = ">=3.13"
 dependencies = ["pillow", "materialyoucolor"]
 
 [project.scripts]
-caelestia = "caelestia:main"
+nimbus = "caelestia:main"
+caelestia = "caelestia:main"  # backwards-compatible alias
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/caelestia"]

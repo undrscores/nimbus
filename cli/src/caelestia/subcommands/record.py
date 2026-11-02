@@ -16,7 +16,7 @@ FALLBACK = "wf-recorder"
 FLATPAK_APP = "com.dec05eba.gpu_screen_recorder"
 
 # Handles the "Recording stopped" notification actions in a tiny detached shell
-# process, so `caelestia record` can exit as soon as the recording is saved.
+# process, so `nimbus record` can exit as soon as the recording is saved.
 _STOPPED_NOTIF_HANDLER = r"""
 path=$1
 uri=$2
