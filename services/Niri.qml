@@ -233,8 +233,7 @@ Singleton {
     NiriSocket {
         id: events
 
-        onConnectedChanged: if (connected)
-            send("EventStream")
+        onReady: send("EventStream")
         onMessage: data => {
             // First reply is {"Ok":{"Handled":null}}; events follow.
             if (data.Ok !== undefined || data.Err !== undefined) {

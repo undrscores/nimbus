@@ -1,46 +1,69 @@
+import QtQuick
 import Quickshell
 import Quickshell.Io
 
 // Line-based JSON client for the niri IPC socket ($NIRI_SOCKET).
-Socket {
+Scope {
     id: root
 
     property bool autoReconnect: true
+    readonly property bool connected: socket.connected
 
     signal message(var data)
+    // Emitted shortly after the socket connects; safe to write requests.
+    signal ready
 
     function send(request: var): void {
-        if (!connected)
+        if (!socket.connected)
             return;
-        write(JSON.stringify(request) + "\n");
-        flush();
+        socket.write(JSON.stringify(request) + "\n");
+        socket.flush();
     }
 
-    path: Quickshell.env("NIRI_SOCKET")
-    connected: path !== ""
+    // The initial `connected` value comes from a binding, so no change signal fires for it.
+    Component.onCompleted: {
+        if (socket.connected)
+            readyTimer.start();
+    }
 
-    parser: SplitParser {
-        onRead: line => {
-            let data;
-            try {
-                data = JSON.parse(line);
-            } catch (e) {
-                console.warn("NiriSocket: bad json:", line);
-                return;
+    Socket {
+        id: socket
+
+        path: Quickshell.env("NIRI_SOCKET")
+        connected: path !== ""
+
+        parser: SplitParser {
+            onRead: line => {
+                let data;
+                try {
+                    data = JSON.parse(line);
+                } catch (e) {
+                    console.warn("NiriSocket: bad json:", line);
+                    return;
+                }
+                root.message(data);
             }
-            root.message(data);
+        }
+
+        onConnectedChanged: {
+            if (connected)
+                readyTimer.restart();
+            else if (root.autoReconnect && path !== "")
+                reconnectTimer.restart();
         }
     }
 
-    onConnectedChanged: {
-        if (!connected && autoReconnect && path !== "")
-            reconnect.restart();
+    Timer {
+        id: readyTimer
+
+        interval: 150
+        onTriggered: root.ready()
     }
 
-    property Timer reconnectTimer: Timer {
-        id: reconnect
+    Timer {
+        id: reconnectTimer
 
-        interval: 1000
-        onTriggered: root.connected = true
+        interval: 1500
+        onTriggered: socket.connected = true
     }
 }

@@ -11,11 +11,11 @@ Singleton {
 
     property var registered: ({})
 
-    function register(shortcut: QtObject): void {
+    function register(shortcut: var): void {
         registered[shortcut.name] = shortcut;
     }
 
-    function unregister(shortcut: QtObject): void {
+    function unregister(shortcut: var): void {
         if (registered[shortcut.name] === shortcut)
             delete registered[shortcut.name];
     }

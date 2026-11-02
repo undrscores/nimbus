@@ -5,7 +5,7 @@ import Quickshell
 // While `active`, emits `cleared` once any of `windows` has had keyboard focus and then lost it,
 // e.g. because the user clicked another client. Windows must use a layer-shell keyboardFocus
 // mode that lets focus leave (OnDemand).
-Item {
+Scope {
     id: root
 
     property bool active
@@ -13,34 +13,30 @@ Item {
 
     signal cleared
 
-    visible: false
+    property bool hadFocus
 
-    QtObject {
-        id: state
+    onActiveChanged: hadFocus = false
 
-        property bool hadFocus
-    }
-
-    onActiveChanged: state.hadFocus = false
-
-    Repeater {
+    Instantiator {
         model: root.windows
 
-        Connections {
+        delegate: Connections {
+            id: conn
+
             required property QtObject modelData
 
             function onActiveChanged(): void {
                 if (!root.active)
                     return;
-                if (modelData.active)
-                    state.hadFocus = true;
-                else if (state.hadFocus) {
-                    state.hadFocus = false;
+                if (target.active)
+                    root.hadFocus = true;
+                else if (root.hadFocus) {
+                    root.hadFocus = false;
                     root.cleared();
                 }
             }
 
-            target: modelData
+            target: modelData?.backingWindow ?? null
         }
     }
 }
