@@ -11,6 +11,8 @@ from caelestia.utils.notify import close_notification, notify
 from caelestia.utils.paths import get_config, recording_notif_path, recording_path, recordings_dir
 
 RECORDER = "gpu-screen-recorder"
+# Software fallback for machines where gpu-screen-recorder cannot encode (e.g. NVENC/driver mismatch)
+FALLBACK = "wf-recorder"
 
 # Handles the "Recording stopped" notification actions in a tiny detached shell
 # process, so `caelestia record` can exit as soon as the recording is saved.
@@ -63,13 +65,15 @@ class Command:
             self.start()
 
     def proc_running(self) -> bool:
-        return subprocess.run(["pidof", RECORDER], stdout=subprocess.DEVNULL).returncode == 0
+        return subprocess.run(["pidof", RECORDER, FALLBACK], stdout=subprocess.DEVNULL).returncode == 0
 
     def intersects(self, a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> bool:
         return a[0] < b[0] + b[2] and a[0] + a[2] > b[0] and a[1] < b[1] + b[3] and a[1] + a[3] > b[1]
 
     def start(self) -> None:
         args = ["-w"]
+        # 30 fps: software AV1 at 1440p cannot keep up with (or accept) a 240+ Hz monitor rate
+        fb_args = ["-c", "libsvtav1", "-x", "yuv420p", "-r", "30"]
 
         monitors = niri.monitors()
         if self.args.region:
@@ -95,6 +99,7 @@ class Command:
                     rr = round(monitor["refreshRate"])
                     max_rr = max(max_rr, rr)
             args += ["-f", str(max_rr)]
+            fb_args += ["-g", f"{x},{y} {w}x{h}"]
         else:
             focused_monitor = next((monitor for monitor in monitors if monitor["focused"]), None)
             if focused_monitor:
@@ -103,9 +108,11 @@ class Command:
                     "-f",
                     str(round(focused_monitor["refreshRate"])),
                 ]
+                fb_args += ["-o", focused_monitor["name"]]
 
         if self.args.sound:
             args += ["-a", "default_output"]
+            fb_args += ["-a"]
 
         config = get_config()
         try:
@@ -128,7 +135,20 @@ class Command:
         recording_notif_path.write_text(notif)
 
         try:
-            if proc.wait(1) != 0:
+            if proc.wait(5) != 0:
+                if shutil.which(FALLBACK):
+                    proc = subprocess.Popen(
+                        [FALLBACK, *fb_args, "-f", str(recording_path)],
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True,
+                    )
+                    try:
+                        if proc.wait(1) == 0:
+                            return
+                    except subprocess.TimeoutExpired:
+                        return
                 close_notification(notif)
                 notify(
                     "Recording failed",
@@ -140,6 +160,7 @@ class Command:
 
     def stop(self) -> None:
         # Start killing recording process
+        subprocess.run(["pkill", "-INT", "-x", FALLBACK], stdout=subprocess.DEVNULL)
         subprocess.run(["pkill", "-f", RECORDER], stdout=subprocess.DEVNULL)
 
         # Wait for recording to finish to avoid corrupted video file

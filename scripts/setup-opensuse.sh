@@ -23,7 +23,7 @@ packages="git cmake ninja gcc-c++ meson pkgconf-pkg-config
     qt6-base-devel qt6-declarative-devel qt6-shadertools-devel qt6-multimedia-devel qt6-sql-devel
     qt6-multimedia-imports qt6-imageformats
     libqalculate-devel pipewire-devel aubio-devel libsensors4-devel fftw3-devel libiniparser-devel
-    python313-Pillow gpu-screen-recorder slurp swappy wl-clipboard libnotify-tools
+    python313-Pillow gpu-screen-recorder wf-recorder slurp swappy wl-clipboard libnotify-tools
     ddcutil brightnessctl power-profiles-daemon playerctl libxml2-tools fish
     nerdfonts-symbolsonly-fonts"
 
@@ -93,6 +93,7 @@ cat <<EOF
 Done. Next:
   1. Add the autostart line and binds from docs/niri-config.kdl to ~/.config/niri/config.kdl
      (replace /path/to/nimbus with $root).
-  2. Screen recording needs:  sudo setcap cap_sys_admin+ep /usr/bin/gsr-kms-server
+  2. Screen recording: gpu-screen-recorder needs  sudo setcap cap_sys_admin+ep /usr/bin/gsr-kms-server
+     (if it cannot encode, e.g. NVENC/driver mismatch, Nimbus falls back to software encoding with wf-recorder)
   3. Start it now with:       $root/scripts/niri-start.sh
 EOF
