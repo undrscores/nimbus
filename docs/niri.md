@@ -4,9 +4,20 @@ This fork talks to niri over its IPC socket (`$NIRI_SOCKET`, see `services/Niri.
 
 ## Autostart
 
+If the shell is installed system-wide (`cmake --install`) and linked as `~/.config/quickshell/caelestia`:
+
 ```kdl
 spawn-at-startup "qs" "-c" "caelestia"
 ```
+
+From a source checkout built in `./build`, use the helper script, which also sets the
+library/QML paths for anything installed under `~/.local` (libcava, m3shapes):
+
+```kdl
+spawn-at-startup "/path/to/caelestia-shell/scripts/niri-start.sh"
+```
+
+With a checkout, replace `qs -c caelestia` in the binds below with `qs -p /path/to/caelestia-shell/shell.qml`.
 
 ## Keybinds
 
