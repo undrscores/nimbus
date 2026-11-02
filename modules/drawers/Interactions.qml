@@ -18,6 +18,8 @@ CustomMouseArea {
     required property real borderThickness
     required property bool fullscreen
 
+    signal pressedAt(real x, real y)
+
     property point dragStart
     property bool dashboardShortcutActive
     property bool osdShortcutActive
@@ -64,7 +66,10 @@ CustomMouseArea {
     acceptedButtons: fullscreen ? Qt.NoButton : Qt.AllButtons
     hoverEnabled: true
 
-    onPressed: event => dragStart = Qt.point(event.x, event.y)
+    onPressed: event => {
+        dragStart = Qt.point(event.x, event.y);
+        pressedAt(event.x, event.y);
+    }
     onContainsMouseChanged: {
         if (!containsMouse) {
             // Only hide if not activated by shortcut

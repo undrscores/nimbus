@@ -102,25 +102,20 @@ StyledWindow {
 
     property bool clickOutsideDismiss: true
 
-    // Click-outside dismissal (niri has no focus-grab protocol). Sits below the bar and panels, so it only
-    // sees presses they don't handle; presses inside their bounds are ignored.
-    MouseArea {
-        z: -1
-        anchors.fill: parent
-        enabled: root.clickOutsideDismiss && focusGrab.active
-        onPressed: event => {
-            const items = [bar, panels.dashboard, panels.launcher, panels.sessionWrapper, panels.sidebar, panels.popoutsWrapper, panels.utilities, panels.notifications, panels.osdWrapper];
-            for (const it of items) {
-                if (!it)
-                    continue;
-                const p = mapToItem(it, event.x, event.y);
-                if (p.x >= 0 && p.y >= 0 && p.x <= it.width && p.y <= it.height) {
-                    event.accepted = false;
-                    return;
-                }
-            }
-            focusGrab.cleared();
+    // Click-outside dismissal (niri has no focus-grab protocol). Called by Interactions for every press it
+    // sees; presses inside the bar or a panel are ignored.
+    function handlePress(x: real, y: real): void {
+        if (!clickOutsideDismiss || !focusGrab.active)
+            return;
+        const items = [bar, panels.dashboard, panels.launcher, panels.sessionWrapper, panels.sidebar, panels.popoutsWrapper, panels.utilities, panels.notifications, panels.osdWrapper];
+        for (const it of items) {
+            if (!it)
+                continue;
+            const p = interactions.mapToItem(it, x, y);
+            if (p.x >= 0 && p.y >= 0 && p.x <= it.width && p.y <= it.height)
+                return;
         }
+        focusGrab.cleared();
     }
 
     FocusGrab {
@@ -272,6 +267,7 @@ StyledWindow {
         bar: bar
         borderThickness: root.borderLayoutThickness
         fullscreen: root.hasFullscreen
+        onPressedAt: (x, y) => root.handlePress(x, y)
 
         Panels {
             id: panels
