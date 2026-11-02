@@ -25,11 +25,14 @@ StyledWindow {
     readonly property bool hasFullscreen: Niri.hasFullscreen(screen.name)
 
     property real fsTransitionProg: hasFullscreen ? 1 : 0
-    readonly property real sdfBorderOffset: 2 * fsTransitionProg // SDFs joins are not exact, so offset by 2px to ensure nothing shows
-    readonly property real borderThickness: contentItem.Config.border.thickness * (1 - fsTransitionProg)
-    readonly property real borderRounding: (GameMode.enabled && GlobalConfig.utilities.gameMode.options["decoration:rounding"] === 0 ? 0 : contentItem.Config.border.rounding) * (1 - fsTransitionProg)
-    readonly property real shadowOpacity: 0.7 * (1 - fsTransitionProg)
-    readonly property real borderLayoutThickness: hasFullscreen ? 0 : contentItem.Config.border.thickness
+    property real autoHideProg: AutoHide.enabled ? 1 : 0
+    // Border/shadow/rounding fade out for either fullscreen or auto-hide mode
+    readonly property real hideProg: Math.max(fsTransitionProg, autoHideProg)
+    readonly property real sdfBorderOffset: 2 * hideProg // SDFs joins are not exact, so offset by 2px to ensure nothing shows
+    readonly property real borderThickness: contentItem.Config.border.thickness * (1 - hideProg)
+    readonly property real borderRounding: (GameMode.enabled && GlobalConfig.utilities.gameMode.options["decoration:rounding"] === 0 ? 0 : contentItem.Config.border.rounding) * (1 - hideProg)
+    readonly property real shadowOpacity: 0.7 * (1 - hideProg)
+    readonly property real borderLayoutThickness: hasFullscreen || AutoHide.enabled ? 0 : contentItem.Config.border.thickness
 
     property color surfaceColour: Colours.tPalette.m3surface
 
@@ -69,6 +72,10 @@ StyledWindow {
     anchors.right: true
 
     Behavior on fsTransitionProg {
+        Anim {}
+    }
+
+    Behavior on autoHideProg {
         Anim {}
     }
 

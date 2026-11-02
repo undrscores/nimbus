@@ -37,6 +37,27 @@ Scope {
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
+        name: "autoHide"
+        description: "Toggle auto-hide mode (hide bar, border, desktop clock and visualiser)"
+        onPressed: AutoHide.toggle()
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "bar"
+        description: "Toggle bar"
+        onPressed: {
+            if (root.hasFullscreen)
+                return;
+            const screenState = ShellState.forActive();
+            screenState.bar = !screenState.bar;
+        }
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dashboard"
         description: "Toggle dashboard"
         onPressed: {

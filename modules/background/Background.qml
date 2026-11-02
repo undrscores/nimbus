@@ -61,7 +61,7 @@ Variants {
             id: clockLoader
 
             asynchronous: true
-            active: Config.background.desktopClock.enabled
+            active: Config.background.desktopClock.enabled && !AutoHide.enabled
 
             anchors.margins: Tokens.padding.extraLargeIncreased
             anchors.leftMargin: Tokens.padding.extraLargeIncreased + Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness)

@@ -4,6 +4,7 @@ import Quickshell
 import Caelestia.Config
 import qs.components
 import qs.components.controls
+import qs.services
 import qs.modules.bar as Bar
 import qs.modules.bar.popouts as BarPopouts
 
@@ -89,7 +90,7 @@ CustomMouseArea {
                 bar.closeTray();
             }
 
-            if (Config.bar.showOnHover)
+            if (Config.bar.showOnHover || AutoHide.enabled)
                 bar.isHovered = false;
 
             if (Config.sidebar.showOnHover && !sidebarShortcutActive)
@@ -112,8 +113,11 @@ CustomMouseArea {
         }
 
         // Show bar in non-exclusive mode on hover
-        if (!screenState.bar && Config.bar.showOnHover && x < bar.clampedWidth)
+        if (!screenState.bar && (Config.bar.showOnHover || AutoHide.enabled) && x < bar.clampedWidth)
             bar.isHovered = true;
+        // In auto-hide mode the bar must not linger once the pointer moves away from it
+        else if (AutoHide.enabled && bar.isHovered && x > bar.implicitWidth && !popouts.hasCurrent)
+            bar.isHovered = false;
 
         // Show/hide bar on drag
         if (pressed && dragStart.x < bar.clampedWidth) {

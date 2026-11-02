@@ -38,6 +38,8 @@ binds {
     Mod+N            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "sidebar"; }
     Mod+Shift+U      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "utilities"; }
     Mod+Shift+A      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "showall"; }
+    Mod+B            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "bar"; }
+    Mod+Shift+B      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "autoHide"; }
     Mod+Comma        { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "nexus"; }
     Mod+L            { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "lock"; }
     Mod+Shift+L      { spawn "qs" "-c" "caelestia" "ipc" "call" "shortcut" "trigger" "unlock"; }
@@ -80,3 +82,16 @@ layer-rule {
 - Window info: no pin button; position/size come from niri's window layout info.
 - Area picker: only tiled windows with a reported on-screen position can be snapped to.
 - Game mode only affects the shell (compositor options can't be changed at runtime in niri).
+
+## Auto-hide mode
+
+Permanent on-screen elements can burn in on OLED panels. Auto-hide mode hides all of them: the bar, the screen border and
+its shadow, the desktop clock and the audio visualiser. Windows reclaim the space the bar and border reserved, and
+nothing is drawn on screen until you ask for it.
+
+- Toggle at runtime: `qs -c caelestia ipc call shortcut trigger autoHide` (bound to `Mod+Shift+B` in the example above).
+- Enable at startup: set `general.autoHide` to `true` in the config.
+- Bring the bar back temporarily by pushing the pointer against the left edge (it hides again when the pointer moves
+  away), or with the `bar` shortcut. In auto-hide mode the bar only overlays windows and never reserves space.
+- Dashboard, launcher, sidebar, session menu, utilities and OSD keep working: they slide in from their screen edge
+  on hover, drag or keybind exactly as before.
