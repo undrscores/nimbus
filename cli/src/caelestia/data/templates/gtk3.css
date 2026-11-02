@@ -1,0 +1,82 @@
+
+/* GTK3 widget rules: Adwaita for GTK3 bakes its colours in at build time, so the named colours above are not
+   enough; restyle the common widgets explicitly. Only the toplevel window carries the opacity: translucent layers
+   stack (0.9 over 0.9 is 0.99), so containers inside it are transparent or a faint dark tint. */
+window, .background {
+  background-color: rgba({{surface.rgb}}, {{opacity}});
+  color: #{{onSurface}};
+}
+headerbar, .titlebar, toolbar, .toolbar, .primary-toolbar, statusbar, actionbar {
+  background-image: none;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #{{onSurface}};
+  border-color: #{{outlineVariant}};
+  box-shadow: none;
+}
+menubar, .menubar {
+  background-image: none;
+  background-color: transparent;
+  color: #{{onSurface}};
+}
+.sidebar, placessidebar, placessidebar list, placessidebar row, stacksidebar {
+  background-color: rgba(0, 0, 0, 0.12);
+  color: #{{onSurface}};
+}
+.view, iconview, treeview.view, textview text, list, row, .content-view {
+  background-color: transparent;
+  color: #{{onSurface}};
+}
+.view:selected, iconview:selected, treeview.view:selected, row:selected, menuitem:hover, modelbutton:hover,
+selection, text selection, .view:selected:focus, row:selected:focus {
+  background-color: #{{primaryContainer}};
+  color: #{{onPrimaryContainer}};
+}
+treeview.view header button, list header {
+  background-image: none;
+  background-color: transparent;
+  color: #{{onSurfaceVariant}};
+  border-color: #{{outlineVariant}};
+}
+menu, .menu, .popup, popover, popover.background, .context-menu, tooltip, tooltip.background {
+  background-color: #{{surfaceContainerHigh}};
+  color: #{{onSurface}};
+  border-color: #{{outlineVariant}};
+}
+menuitem, modelbutton { color: #{{onSurface}}; }
+button, .button {
+  background-image: none;
+  background-color: #{{surfaceContainerHigh}};
+  color: #{{onSurface}};
+  border-color: #{{outlineVariant}};
+  box-shadow: none;
+  text-shadow: none;
+}
+button:hover { background-color: #{{surfaceContainerHighest}}; }
+button:active, button:checked, button.suggested-action {
+  background-image: none;
+  background-color: #{{primary}};
+  color: #{{onPrimary}};
+}
+button.destructive-action { background-image: none; background-color: #{{errorContainer}}; color: #{{onErrorContainer}}; }
+button:disabled, *:disabled { color: #{{outline}}; }
+entry, spinbutton, .entry {
+  background-image: none;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #{{onSurface}};
+  border-color: #{{outlineVariant}};
+  box-shadow: none;
+}
+entry:focus, spinbutton:focus { border-color: #{{primary}}; }
+notebook > header, notebook > header > tabs > tab {
+  background-color: transparent;
+  color: #{{onSurfaceVariant}};
+  border-color: #{{outlineVariant}};
+}
+notebook > header > tabs > tab:checked { color: #{{onSurface}}; }
+scrollbar, scrollbar trough { background-color: transparent; }
+scrollbar slider { background-color: #{{outline}}; border-color: transparent; }
+paned > separator, separator { background-color: #{{outlineVariant}}; }
+progressbar progress, scale highlight, levelbar block.filled { background-color: #{{primary}}; }
+scale trough, progressbar trough, levelbar trough { background-color: #{{surfaceContainerHighest}}; }
+switch:checked { background-color: #{{primary}}; color: #{{onPrimary}}; }
+link, *:link { color: #{{primary}}; }

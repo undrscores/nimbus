@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Services.UPower
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -61,7 +62,8 @@ StyledRect {
             model: ScriptModel {
                 id: model
 
-                values: root.Config.bar.statusIcons.values.filter(e => e.enabled)
+                // The battery entry doubles as the power profile switcher, which means nothing on a desktop without a battery
+                values: root.Config.bar.statusIcons.values.filter(e => e.enabled && (e.id !== "battery" || UPower.displayDevice.isLaptopBattery))
             }
 
             DelegateChooser {

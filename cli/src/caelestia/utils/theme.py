@@ -128,7 +128,10 @@ def apply_gtk(colours: dict[str, str], mode: str) -> None:
         if path.exists() and not path.read_text().startswith(GTK_MARKER):
             warn(f"{path} is not managed by caelestia, leaving it alone")
             continue
-        _write_if_changed(path, css)
+        # GTK3 themes don't read the named colours, so it also gets explicit widget rules
+        extra = render_file("gtk3.css", colours, mode) if ver == "gtk-3.0" else ""
+        _write_if_changed(path, css + extra)
+        _set_prefer_dark(config_dir / ver / "settings.ini", mode == "dark")
 
     if shutil.which("gsettings"):
         scheme = "prefer-dark" if mode == "dark" else "prefer-light"
@@ -137,6 +140,15 @@ def apply_gtk(colours: dict[str, str], mode: str) -> None:
             stderr=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
         )
+
+
+def _set_prefer_dark(path: Path, dark: bool) -> None:
+    """Keep gtk-application-prefer-dark-theme in sync so unthemed widgets (icons, insensitive states) match."""
+    sections = _parse_ini(path.read_text() if path.exists() else "")
+    settings = sections.setdefault("[Settings]", [])
+    settings[:] = [ln for ln in settings if not ln.startswith("gtk-application-prefer-dark-theme")]
+    settings.append(f"gtk-application-prefer-dark-theme={'true' if dark else 'false'}")
+    _write_if_changed(path, _dump_ini(sections))
 
 
 def _parse_ini(text: str) -> dict[str, list[str]]:
