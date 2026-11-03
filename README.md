@@ -21,7 +21,7 @@ so the upstream look carries over.
 | Workspaces | numbered, plus special workspaces | niri's per-output workspaces; special workspaces removed |
 | Caps/num lock | Hyprland device info | keyboard LEDs in `/sys/class/leds` |
 | Fullscreen detection | Hyprland client flag | window size vs output size |
-| `caelestia` CLI | upstream CLI | trimmed fork in [`cli/`](cli): wallpaper, scheme, theme, record |
+| helper CLI | `caelestia` (upstream CLI) | `nimbus`, a trimmed fork in [`cli/`](cli): wallpaper, scheme, theme, record |
 
 Known limitations: the area picker cannot snap to windows (niri reports no window positions), game mode only affects the
 shell and there is no window pin button. App theming covers Alacritty, niri, GTK, Qt/KDE and Zed only; see [docs/niri.md](docs/niri.md#app-theming).
@@ -46,6 +46,9 @@ Other distributions need the same pieces by hand:
 - runtime tools: `ddcutil`, `brightnessctl`, `swappy`, `wl-clipboard`, `slurp`, `gpu-screen-recorder`, `libnotify`, `playerctl`,
   `power-profiles-daemon`, `networkmanager`
 - the `nimbus` helper CLI: `scripts/install-cli.sh` (needs `python3-Pillow`; `materialyoucolor` comes from PyPI)
+
+A Nix flake (`flake.nix`, `nix/`) is still in the tree, inherited from upstream. It has not been updated for niri, so treat it
+as unsupported; the openSUSE script and the manual steps here are the maintained paths.
 
 Build the plugin manually with:
 
@@ -89,11 +92,17 @@ Options live in `~/.config/caelestia/shell.json` and are documented in [docs/con
 Per-monitor overrides go in `~/.config/caelestia/monitors/<output>/shell.json`; list outputs with
 `niri msg --json outputs | jq -r 'keys[]'`.
 
+The config and state directories keep the upstream `caelestia` name so existing Caelestia configs and colour schemes carry over.
+The side effect is that Nimbus and upstream Caelestia share `~/.config/caelestia` and `~/.local/state/caelestia`, so don't run both
+on the same account. The helper CLI itself is called `nimbus`, so it doesn't clash with an installed `caelestia` binary.
+
 ## Troubleshooting
 
 - **Icons show as words** (`chevron_left`, `memory`): the Material Symbols Rounded font is missing; run `fc-list | grep -i "material symbols"`.
 - **Shell crashes at startup with `module "…" is not installed`**: a Qt module or `M3Shapes` is missing from `QML_IMPORT_PATH`; use `scripts/niri-start.sh`.
-- **Screen recording does nothing**: `gpu-screen-recorder` needs `sudo setcap cap_sys_admin+ep /usr/bin/gsr-kms-server`, or portal capture.
+- **Screen recording does nothing**: prefer portal capture. KMS capture needs `gsr-kms-server` to have `cap_sys_admin`
+  (`sudo setcap cap_sys_admin+ep "$(command -v gsr-kms-server)"`; the path varies by distro). That capability is broad, and
+  a package update resets it, so you may have to re-apply it.
 - **Logs**: `qs -p /path/to/nimbus/shell.qml log`.
 
 ## Credits
