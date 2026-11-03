@@ -268,10 +268,11 @@ Singleton {
         }
     }
 
-    // Caps/num lock aren't exposed over niri IPC; poll the keyboard LEDs.
+    // Caps/num lock aren't exposed over niri IPC; poll the keyboard LEDs. `read` is a shell builtin, so a poll tick
+    // forks nothing but `sleep`, and a line is only printed when the state changes (plus once at startup).
     Process {
         running: true
-        command: ["sh", "-c", "while :; do c=0; n=0; for f in /sys/class/leds/*::capslock/brightness; do [ -r \"$f\" ] && [ \"$(cat \"$f\")\" -gt 0 ] && c=1; done; for f in /sys/class/leds/*::numlock/brightness; do [ -r \"$f\" ] && [ \"$(cat \"$f\")\" -gt 0 ] && n=1; done; echo \"$c $n\"; sleep 0.25; done"]
+        command: ["sh", "-c", "last=; while :; do c=0; n=0; for f in /sys/class/leds/*::capslock/brightness; do [ -r \"$f\" ] && read -r v < \"$f\" && [ \"$v\" -gt 0 ] && c=1; done; for f in /sys/class/leds/*::numlock/brightness; do [ -r \"$f\" ] && read -r v < \"$f\" && [ \"$v\" -gt 0 ] && n=1; done; s=\"$c $n\"; if [ \"$s\" != \"$last\" ]; then echo \"$s\"; last=$s; fi; sleep 0.25; done"]
         stdout: SplitParser {
             onRead: line => {
                 const [c, n] = line.split(" ");

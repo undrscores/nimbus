@@ -10,3 +10,6 @@ while [ "$i" -lt 100 ]; do
     fi
     i=$((i + 1)); sleep 0.2
 done
+# Never got a confirmed lock. Say so loudly instead of leaving an unlocked session that looks like it worked.
+echo "niri-lock-on-start: could not lock the session after 20s (is the shell running?)" >&2
+exit 1

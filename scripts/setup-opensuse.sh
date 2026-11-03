@@ -109,7 +109,9 @@ cat <<EOF
 Done. Next:
   1. Add the autostart line and binds from docs/niri-config.kdl to ~/.config/niri/config.kdl
      (replace /path/to/nimbus with $root).
-  2. Screen recording: gpu-screen-recorder needs  sudo setcap cap_sys_admin+ep /usr/bin/gsr-kms-server
-     (if it cannot encode, e.g. NVENC/driver mismatch, Nimbus falls back to software encoding with wf-recorder)
+  2. Screen recording: portal capture needs no setup. For KMS capture, gpu-screen-recorder needs
+       sudo setcap cap_sys_admin+ep "\$(command -v gsr-kms-server)"
+     (broad capability, and a package update resets it. If it cannot encode, e.g. NVENC/driver mismatch,
+     Nimbus falls back to software encoding with wf-recorder)
   3. Start it now with:       $root/scripts/niri-start.sh
 EOF
